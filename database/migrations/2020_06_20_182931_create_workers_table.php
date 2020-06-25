@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateWorkPlacesTable extends Migration
+class CreateWorkersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,29 @@ class CreateWorkPlacesTable extends Migration
      */
     public function up()
     {
-        Schema::create('work_places', function (Blueprint $table) {
+        Schema::create('workers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('logo_path')->nullable();
-            $table->string('address')->nullable();
+            $table->string('short_name');
+            $table->string('job_title');
+            $table->integer('salary');
+            $table->unsignedBigInteger('work_place_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
+
+            $table->foreign('work_place_id')
+                ->references('id')
+                ->on('work_places')
+                ->onDelete('CASCADE');
+                
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('CASCADE');
         });
     }
 
@@ -33,6 +46,6 @@ class CreateWorkPlacesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('work_places');
+        Schema::dropIfExists('workers');
     }
 }

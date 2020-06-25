@@ -2,36 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\WorkerResource;
+use App\Worker;
+use App\WorkPlace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
-use App\Http\Resources\WorkPlaceResource;
-use App\WorkPlace;
 
-class WorkPlaceController extends Controller
+class WorkerController extends Controller
 {
     /**
-     * Show single work placed
-     *
-     * @param WorkPlace $workPlace
-     * @return WorkPlaceResource
+     * Show single worker
+     * @param Worker
+     * @return WorkerResource
      */
-    public function show(WorkPlace $workPlace)
+    public function show(Worker $worker)
     {
-        return new WorkPlaceResource($workPlace);
+        return new WorkerResource($worker);
     }
 
     /**
-     * Show multiple work places
-     *
-     * @return WorkPlaceResource
+     * Show all workers
+     * @param Worker
+     * @return WorkerResource
      */
-    public function index()
+    public function index(WorkPlace $workPlace)
     {
-        return WorkPlaceResource::collection(WorkPlace::all());
+        if ($workPlace == null) {
+            return WorkerResource::collection(Worker::all());
+        }
+
+        return WorkerResource::collection($workPlace->workers);
     }
-    
+
     /**
      * Store newly created data
      *
@@ -43,7 +47,7 @@ class WorkPlaceController extends Controller
         $data = $this->validator($request->all())->validate();
         $data['created_by'] = Auth::id();
 
-        $created = WorkPlace::create($data);
+        $created = Worker::create($data);
 
         if (!$created) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
@@ -53,33 +57,33 @@ class WorkPlaceController extends Controller
     }
 
     /**
-     * Update existing data
-     *
-     * @param Response $response
-     * @param WorkPlace $workPlace
-     * @return json
-     */
-    public function update(Request $request, WorkPlace $workPlace)
+    * Update existing data
+    *
+    * @param Response $response
+    * @param Worker $worker
+    * @return json
+    */
+    public function update(Request $request, Worker $worker)
     {
         $data = $this->validator($request->all())->validate();
         $data['updated_by'] = Auth::id();
 
-        if (!$workPlace->update($data)) {
+        if (!$worker->update($data)) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return response()->json(['success' => 'Work place has been updated'], ResponseStatus::HTTP_OK);
+        return response()->json(['success' => 'Worker has been updated'], ResponseStatus::HTTP_OK);
     }
 
     /**
-     * Delete Work Place
+     * Delete Worker
      *
-     * @param WorkPlace $workPlace
+     * @param Worker $workPlace
      * @return json
      */
-    public function destroy(WorkPlace $workPlace)
+    public function destroy(Worker $worker)
     {
-        if (!$workPlace->delete()) {
+        if (!$worker->delete()) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -89,15 +93,17 @@ class WorkPlaceController extends Controller
     /**
      * Validate incoming data
      *
-     * @param array $request
+     * @param array $data
      * @return Validator
      */
-    public function validator($request)
+    public function validator($data)
     {
-        return Validator::make($request, [
+        return Validator::make($data, [
             'name' => 'string|max:50|required',
-            'logo_path' => 'string|max:1000',
-            'address' => 'string|max:255'
+            'short_name' => 'string|max:50',
+            'job_title' => 'string|max:50',
+            'salary' => 'numeric|min:0',
+            'work_place_id' => 'numeric|min:0'
         ]);
     }
 }
