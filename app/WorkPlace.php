@@ -20,4 +20,9 @@ class WorkPlace extends Model
     {
         return $this->hasMany(Worker::class, 'work_place_id');
     }
+
+    public function grantedPermissions()
+    {
+        return $this->hasMany(Permission::class, 'work_place_id');
+    }
 }

@@ -6,6 +6,7 @@ use App\Shift;
 use App\User;
 use App\Worker;
 use App\WorkPlace;
+use App\Permission;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -17,28 +18,25 @@ class ShiftControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    protected function setUp() : void
-    {
-        parent::setUp();
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
-    }
+    // protected function setUp() : void
+    // {
+    //     parent::setUp();
+    //     factory(WorkPlace::class)->create();
+    //     factory(Worker::class)->create();
+    // }
 
     /** @test */
     public function a_shift_can_be_added_to_schedule()
     {
-        $this->withoutExceptionHandling();
+        $permission = setUpPermissionForUser();
+        Passport::actingAs($permission['user']);
 
-        Passport::actingAs(factory(User::class)->create());
+        $worker = factory(Worker::class)->create(['user_id' => $permission['user']->id, 'work_place_id' => $permission['workPlace']->id]);
+        $shift = factory(Shift::class)->raw(['worker_id' => $worker->id, 'work_place_id' => $permission['workPlace']->id]);
 
-        $response = $this->post('api/shift', [
-            'worker_id' => 1,
-            'work_place_id' => 1,
-            'day' => '2020-06-21',
-            'shift_start' => '09:00',
-            'shift_end' => '21:00',
-        ]);
-
+        $response = $this->post('api/shift', $shift);
+        
+        $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertCount(1, Shift::all());
     }
 
@@ -62,7 +60,7 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function a_shift_can_be_deleted()
     {
-        $this->withoutExceptionHandling();
+        // $this->withoutExceptionHandling();
 
         factory(Shift::class)->create();
         Passport::actingAs(factory(User::class)->create());

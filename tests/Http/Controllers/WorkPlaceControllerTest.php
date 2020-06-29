@@ -3,6 +3,7 @@
 namespace Tests\Http\Controllers;
 
 use App\User;
+use App\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -12,12 +13,13 @@ use Laravel\Passport\Passport;
 
 /**
  * @internal
- * @coversNothing
+ *
  */
 class WorkPlaceControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    //-------------------------------------------- Controllers Methods Testing --------------------------------------------
     /** @test */
     public function a_single_work_place_can_be_shown()
     {
@@ -69,31 +71,46 @@ class WorkPlaceControllerTest extends TestCase
     }
 
     /** @test */
-    public function a_work_place_can_be_updated()
+    public function a_work_place_can_be_updated_by_user_with_permissions()
     {
         $this->withoutExceptionHandling();
-
-        factory(WorkPlace::class)->create();
-
-        $response = $this->updateWorkPlace($name = 'TestUpdate');
+        $user_without_permissions = factory(User::class)->create();
+        $creator_of_work_place = factory(User::class)->create();
+        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+        $permission = factory(Permission::class)->create([
+            'user_id' =>  $user_without_permissions->id,
+            'work_place_id' => $workPlace->id,
+            'type' => 'can_edit',
+        ]);
         
+        Passport::actingAs($creator_of_work_place);
+        $response = $this->json('put', '/api/work_place/' . $workPlace->id, [
+            'name' => 'TestUpdate',
+            'logo_path' => 'public/photos/logos/testlogo.jpg',
+            'address' => 'Test Street 1, Test City',
+        ]);
+
         $this->assertEquals('TestUpdate', WorkPlace::first()->name);
         $response->assertStatus(ResponseStatus::HTTP_OK);
     }
 
+
     /** @test */
-    public function a_work_place_can_be_deleted()
+    public function a_work_place_can_be_deleted_by_its_creator()
     {
         $this->withoutExceptionHandling();
-                
-        factory(WorkPlace::class)->create();
-        Passport::actingAs(factory(User::class)->create());
+        $creator_of_work_place = factory(User::class)->create();
+        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+        
+        Passport::actingAs($creator_of_work_place);
 
         $response = $this->delete('api/work_place/1');
         
         $this->assertCount(0, WorkPlace::all());
         $response->assertStatus(ResponseStatus::HTTP_OK);
     }
+
+    //-------------------------------------------- Testing Controllers Permissions --------------------------------------------
 
     /** @test */
     public function a_work_place_cannot_be_added_by_not_logged_user()
@@ -135,6 +152,51 @@ class WorkPlaceControllerTest extends TestCase
     }
 
     /** @test */
+    public function a_work_place_can_not_be_deleted_by_user_without_permissions()
+    {
+        $user_without_permissions = factory(User::class)->create();
+        $creator_of_work_place = factory(User::class)->create();
+        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+        $permission = factory(Permission::class)->create([
+            'user_id' =>  $user_without_permissions->id,
+            'work_place_id' => $workPlace->id,
+            'type' => 'can_edit',
+        ]);
+
+        Passport::actingAs($user_without_permissions);
+        $response = $this->json('delete', '/api/work_place/' . $workPlace->id);
+
+        $this->assertCount(1, WorkPlace::all());
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function a_work_place_can_not_be_updated_by_user_without_permissions()
+    {
+        $user_without_permissions = factory(User::class)->create();
+        $creator_of_work_place = factory(User::class)->create();
+        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+
+        $permission = factory(Permission::class)->create([
+            'user_id' =>  $creator_of_work_place->id,
+            'work_place_id' => $workPlace->id,
+            'type' => 'can_edit',
+        ]);
+        
+        Passport::actingAs($user_without_permissions);
+        $response = $this->json('put', '/api/work_place/' . $workPlace->id, [
+            'name' => 'TestUpdate',
+            'logo_path' => 'public/photos/logos/testlogo.jpg',
+            'address' => 'Test Street 1, Test City',
+        ]);
+
+        $this->assertEquals($workPlace->name, WorkPlace::first()->name);
+        $response->assertStatus(403);
+    }
+
+    //-------------------------------------------- Testing Controllers Validation --------------------------------------------
+
+    /** @test */
     public function a_name_is_required_for_creating_and_updating()
     {
         $response = $this->addWorkPlace($name = '');
@@ -168,6 +230,7 @@ class WorkPlaceControllerTest extends TestCase
         $response->assertSessionHasErrors('logo_path');
     }
 
+    //-------------------------------------------- Allegedly useful methods, but it shall be deleted --------------------------------------------
     /**
      * Add Valid data except told otherwise
      */

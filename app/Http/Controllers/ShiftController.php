@@ -10,6 +10,11 @@ use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 
 class ShiftController extends Controller
 {
+    // public function __construct()
+    // {
+    //     $this->middleware('can:edit')->except(['index', 'show']);
+    // }
+
     /**
      * Store newly created data
      *

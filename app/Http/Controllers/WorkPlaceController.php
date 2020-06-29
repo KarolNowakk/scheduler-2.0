@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 use App\Http\Resources\WorkPlaceResource;
 use App\WorkPlace;
+use Illuminate\Support\Facades\Gate;
 
 class WorkPlaceController extends Controller
 {
@@ -61,6 +62,10 @@ class WorkPlaceController extends Controller
      */
     public function update(Request $request, WorkPlace $workPlace)
     {
+        if (Gate::denies('edit', $workPlace)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+
         $data = $this->validator($request->all())->validate();
         $data['updated_by'] = Auth::id();
 
@@ -79,6 +84,10 @@ class WorkPlaceController extends Controller
      */
     public function destroy(WorkPlace $workPlace)
     {
+        if (Gate::denies('delete', $workPlace)) {
+            abort(403, 'Nope.');
+        }
+
         if (!$workPlace->delete()) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
