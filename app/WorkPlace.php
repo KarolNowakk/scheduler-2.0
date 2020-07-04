@@ -2,19 +2,16 @@
 
 namespace App;
 
+use App\Interfaces\ToUserRelationsInterface;
+use App\Traits\ToUserRelations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class WorkPlace extends Model
+class WorkPlace extends Model implements ToUserRelationsInterface
 {
-    use SoftDeletes;
+    use SoftDeletes, ToUserRelations;
     
-    protected $guarded= [];
-
-    public function createdBy()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+    protected $guarded= ['id'];
 
     public function workers()
     {
