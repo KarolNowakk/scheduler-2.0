@@ -15,8 +15,8 @@ class ToUserRelationsTest extends TestCase
     /** @test */
     public function a_work_place_is_created_by_user()
     {
-        $user = signin();
-        $workPlace = factory(WorkPlace::class)->create(['created_by' => $user->id]);
+        signIn();
+        $workPlace = factory(WorkPlace::class)->create();
 
         $this->assertInstanceOf(User::class, $workPlace->createdBy);
     }
@@ -24,8 +24,9 @@ class ToUserRelationsTest extends TestCase
     /** @test */
     public function a_work_place_is_updated_by_user()
     {
-        $user = signin();
-        $workPlace = factory(WorkPlace::class)->create(['updated_by' => $user->id]);
+        signIn();
+        $workPlace = factory(WorkPlace::class)->create();
+        $workPlace->update(['name' => 'WorkPlace']);
 
         $this->assertInstanceOf(User::class, $workPlace->updatedBy);
     }
@@ -33,8 +34,9 @@ class ToUserRelationsTest extends TestCase
     /** @test */
     public function a_work_place_is_deleted_by_user()
     {
-        $user = signin();
-        $workPlace = factory(WorkPlace::class)->create(['deleted_by' => $user->id]);
+        $user = signIn();
+        $workPlace = factory(WorkPlace::class)->create();
+        $workPlace->delete();
 
         $this->assertInstanceOf(User::class, $workPlace->deletedBy);
     }
