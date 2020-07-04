@@ -35,6 +35,10 @@ class WorkerController extends Controller
      */
     public function index(WorkPlace $workPlace)
     {
+        if (Gate::denies('accessToView', $worker->workPlace)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+
         if ($workPlace == null) {
             return WorkerResource::collection(Worker::all());
         }
@@ -51,7 +55,9 @@ class WorkerController extends Controller
     public function store(Request $request)
     {
         $data = $this->storeValidator($request->all())->validate();
-        $this->checkPermissions($request);
+        if ($this->userHasNoPermissions($request)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
         
         $data['created_by'] = Auth::id();
 
@@ -74,7 +80,10 @@ class WorkerController extends Controller
     public function update(Request $request, Worker $worker)
     {
         $data = $this->updateValidator($request->all())->validate();
-        $this->checkPermissions($worker);
+        if ($this->userHasNoPermissions($worker)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+
         $data['updated_by'] = Auth::id();
 
         if (!$worker->update($data)) {
@@ -92,7 +101,10 @@ class WorkerController extends Controller
      */
     public function destroy(Worker $worker)
     {
-        $this->checkPermissions($worker);
+        if ($this->userHasNoPermissions($worker)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+
         if (!$worker->delete()) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -139,7 +151,7 @@ class WorkerController extends Controller
      * @param Request $request
      * @return json : void
      */
-    protected function checkPermissions($item)
+    protected function userHasNoPermissions($item)
     {
         if ($item instanceof Request) {
             $workPlace = WorkPlace::findOrFail($item->get('work_place_id'));
@@ -147,8 +159,6 @@ class WorkerController extends Controller
             $workPlace = $item->workPlace;
         }
 
-        if (Gate::denies('edit', $workPlace)) {
-            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
-        }
+        return (Gate::denies('edit', $workPlace));
     }
 }
