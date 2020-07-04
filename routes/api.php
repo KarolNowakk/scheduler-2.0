@@ -12,7 +12,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/worker', 'WorkerController@store');
     Route::put('/worker/{worker}', 'WorkerController@update');
     Route::delete('/worker/{worker}', 'WorkerController@destroy');
-    Route::get('/worker/{shift}', 'WorkerController@show');
+    Route::get('/worker/{worker}', 'WorkerController@show');
     Route::get('/workers/{?workPlace}', 'WorkerController@index');
 
     Route::post('/shift', 'ShiftController@store');

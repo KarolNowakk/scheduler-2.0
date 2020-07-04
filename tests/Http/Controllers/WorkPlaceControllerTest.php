@@ -23,11 +23,8 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_single_work_place_can_be_shown()
     {
-        $this->withoutExceptionHandling();
-
         factory(WorkPlace::class)->create();
-
-        Passport::actingAs(factory(User::class)->create());
+        signIn();
 
         $response = $this->get('api/work_place/1');
 
@@ -42,10 +39,8 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_multiple_work_places_can_be_showed()
     {
-        $this->withoutExceptionHandling();
-
         factory(WorkPlace::class, 3)->create();
-        Passport::actingAs(factory(User::class)->create());
+        signIn();
 
         $response = $this->get('api/work_place');
 
@@ -62,8 +57,6 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_be_created()
     {
-        $this->withoutExceptionHandling();
-
         $response = $this->addWorkPlace();
 
         $this->assertCount(1, WorkPlace::all());
@@ -73,18 +66,11 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_be_updated_by_user_with_permissions()
     {
-        $this->withoutExceptionHandling();
-        $user_without_permissions = factory(User::class)->create();
-        $creator_of_work_place = factory(User::class)->create();
-        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
-        $permission = factory(Permission::class)->create([
-            'user_id' =>  $user_without_permissions->id,
-            'work_place_id' => $workPlace->id,
-            'type' => 'can_edit',
-        ]);
+        $permissions = setUpPermissionForUser();
+
+        signIn($permissions['user']);
         
-        Passport::actingAs($creator_of_work_place);
-        $response = $this->json('put', '/api/work_place/' . $workPlace->id, [
+        $response = $this->json('put', '/api/work_place/' . $permissions['workPlace']->id, [
             'name' => 'TestUpdate',
             'logo_path' => 'public/photos/logos/testlogo.jpg',
             'address' => 'Test Street 1, Test City',
@@ -98,11 +84,10 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_be_deleted_by_its_creator()
     {
-        $this->withoutExceptionHandling();
         $creator_of_work_place = factory(User::class)->create();
         $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
         
-        Passport::actingAs($creator_of_work_place);
+        signIn($creator_of_work_place);
 
         $response = $this->delete('api/work_place/1');
         
@@ -154,17 +139,10 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_not_be_deleted_by_user_without_permissions()
     {
-        $user_without_permissions = factory(User::class)->create();
-        $creator_of_work_place = factory(User::class)->create();
-        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
-        $permission = factory(Permission::class)->create([
-            'user_id' =>  $user_without_permissions->id,
-            'work_place_id' => $workPlace->id,
-            'type' => 'can_edit',
-        ]);
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
 
-        Passport::actingAs($user_without_permissions);
-        $response = $this->json('delete', '/api/work_place/' . $workPlace->id);
+        $response = $this->json('delete', '/api/work_place/' . $permissions['workPlace']->id);
 
         $this->assertCount(1, WorkPlace::all());
         $response->assertStatus(403);
@@ -173,24 +151,11 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_not_be_updated_by_user_without_permissions()
     {
-        $user_without_permissions = factory(User::class)->create();
-        $creator_of_work_place = factory(User::class)->create();
-        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+        $permissions = setUpPermissionForUser();
+        signIn();
+        $response = $this->json('put', '/api/work_place/' . $permissions['workPlace']->id, factory(WorkPlace::class)->raw());
 
-        $permission = factory(Permission::class)->create([
-            'user_id' =>  $creator_of_work_place->id,
-            'work_place_id' => $workPlace->id,
-            'type' => 'can_edit',
-        ]);
-        
-        Passport::actingAs($user_without_permissions);
-        $response = $this->json('put', '/api/work_place/' . $workPlace->id, [
-            'name' => 'TestUpdate',
-            'logo_path' => 'public/photos/logos/testlogo.jpg',
-            'address' => 'Test Street 1, Test City',
-        ]);
-
-        $this->assertEquals($workPlace->name, WorkPlace::first()->name);
+        $this->assertEquals($permissions['workPlace']->name, WorkPlace::first()->name);
         $response->assertStatus(403);
     }
 
@@ -239,28 +204,8 @@ class WorkPlaceControllerTest extends TestCase
         $logo = 'public/photos/logos/testlogo.jpg',
         $address = 'Test Street 1, Test City'
     ) {
-        Passport::actingAs(
-            factory(User::class)->create(),
-            ['create-servers']
-        );
+        signIn();
         return $this->post('/api/work_place', [
-            'name' => $name,
-            'logo_path' => $logo,
-            'address' => $address,
-        ]);
-    }
-
-    /**
-     * Update
-     */
-    protected function updateWorkPlace(
-        $name = 'TestWorkPlace',
-        $logo = 'public/photos/logos/testlogo.jpg',
-        $address = 'Test Street 1, Test City'
-    ) {
-        Passport::actingAs(factory(User::class)->create());
-
-        return $this->json('put', '/api/work_place/1', [
             'name' => $name,
             'logo_path' => $logo,
             'address' => $address,

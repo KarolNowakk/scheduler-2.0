@@ -85,7 +85,7 @@ class WorkPlaceController extends Controller
     public function destroy(WorkPlace $workPlace)
     {
         if (Gate::denies('delete', $workPlace)) {
-            abort(403, 'Nope.');
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
         if (!$workPlace->delete()) {

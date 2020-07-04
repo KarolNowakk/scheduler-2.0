@@ -17,8 +17,10 @@ class WorkerTest extends TestCase
     /** @test */
     public function a_worker_is_assigned_to_work_place()
     {
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
+        $workPlace = factory(WorkPlace::class)->create();
+        factory(Worker::class)->create([
+            'work_place_id' => $workPlace->id,
+        ]);
 
         $workersWorkPlace = Worker::first()->workPlace;
 
@@ -29,8 +31,13 @@ class WorkerTest extends TestCase
     public function a_worker_is_created_by_user()
     {
         $user = factory(User::class)->create();
-        factory(WorkPlace::class)->create();
-        $worker = factory(Worker::class)->create(['created_by' => $user->id]);
+        $workPlace = factory(WorkPlace::class)->create([
+            'created_by' => $user->id,
+        ]);
+        $worker = factory(Worker::class)->create([
+            'created_by' => $user->id,
+            'work_place_id' => $workPlace->id,
+        ]);
 
         $this->assertInstanceOf(User::class, $worker->createdBy);
     }
@@ -39,8 +46,11 @@ class WorkerTest extends TestCase
     public function a_worker_can_belong_to_user()
     {
         $user = factory(User::class)->create();
-        factory(WorkPlace::class)->create();
-        $worker = factory(Worker::class)->create(['user_id' => $user->id]);
+        $workPlace = factory(WorkPlace::class)->create();
+        $worker = factory(Worker::class)->create([
+            'user_id' => $user->id,
+            'work_place_id' => $workPlace->id,
+        ]);
 
         $this->assertInstanceOf(User::class, $worker->belongsToUser);
     }

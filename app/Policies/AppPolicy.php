@@ -6,9 +6,10 @@ use App\Permission;
 use App\User;
 use App\WorkPlace;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class WorkPlacePolicy
+class AppPolicy
 {
     use HandlesAuthorization;
 
@@ -24,5 +25,15 @@ class WorkPlacePolicy
         }
 
         return Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
+    }
+
+    public function accessToView(User $user, WorkPlace $workPlace)
+    {
+        foreach ($user->worksAs as $worker) {
+            if ($worker->workPlace->id == $workPlace->id) {
+                // dd($worker->workPlace->id, $workPlace->id);
+                return true;
+            }
+        }
     }
 }

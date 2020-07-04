@@ -18,14 +18,12 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_single_worker_can_be_shown()
     {
-        $this->withoutExceptionHandling();
+        $user = signIn();
 
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
+        $workPlace = factory(WorkPlace::class)->create();
+        $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id, 'user_id' => $user->id]);
 
-        Passport::actingAs(factory(User::class)->create());
-
-        $response = $this->get('api/worker/1');
+        $response = $this->get('api/worker/' . $worker->id);
 
         $response->assertStatus(ResponseStatus::HTTP_OK)
             ->assertJsonStructure([
@@ -43,9 +41,13 @@ class WorkerControllerTest extends TestCase
     public function a_worker_can_be_created()
     {
         $this->withoutExceptionHandling();
-        factory(WorkPlace::class)->create();
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
 
-        $response = $this->addWorker();
+        $worker = factory(Worker::class)->raw([
+            'work_place_id' => $permissions['workPlace'],
+        ]);
+        $response = $this->json('post', 'api/worker', $worker);
 
         $this->assertCount(1, Worker::all());
         $response->assertStatus(ResponseStatus::HTTP_OK);
@@ -54,27 +56,31 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_worker_can_be_updated()
     {
-        $this->withoutExceptionHandling();
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
-        
-        $response = $this->updateWorker($name = 'Updated Worker');
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
 
-        $this->assertEquals('Updated Worker', Worker::first()->name);
+        $existingWorker = factory(Worker::class)->create([
+            'work_place_id' => $permissions['workPlace'],
+        ]);
+
+        $dataForWorkerUpdate = factory(Worker::class)->raw();
+        $response = $this->json('put', 'api/worker/' . $existingWorker->id, $dataForWorkerUpdate);
+
+        $this->assertEquals($dataForWorkerUpdate['name'], Worker::first()->name);
         $response->assertStatus(ResponseStatus::HTTP_OK);
     }
 
     /** @test */
     public function a_worker_can_be_deleted()
     {
-        $this->withoutExceptionHandling();
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
 
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
+        $worker = factory(Worker::class)->create([
+            'work_place_id' => $permissions['workPlace']->id,
+        ]);
 
-        Passport::actingAs(factory(User::class)->create());
-
-        $response = $this->delete('api/worker/1');
+        $response = $this->delete('api/worker/' . $worker->id);
         
         $this->assertCount(0, Worker::all());
         $response->assertStatus(ResponseStatus::HTTP_OK);
@@ -83,6 +89,9 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_name_is_required_when_adding_or_updating()
     {
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
+
         $response = $this->addWorker($name = '');
         
         $response->assertSessionHasErrors('name');
@@ -95,6 +104,9 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_name_short_name_and_job_title_must_be_strings_when_adding_or_updating()
     {
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
+
         $response = $this->addWorker($name = 1, $shortName = 1, $jobTitle = 1);
         
         $response->assertSessionHasErrors('name');
@@ -107,6 +119,9 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_name_short_name_and_job_title_must_have_maximum_length_50_characters_when_adding_or_updating()
     {
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
+
         $response = $this->addWorker(
             $name = str_repeat('t', 51),
             $shortName = str_repeat('t', 51),
@@ -121,8 +136,11 @@ class WorkerControllerTest extends TestCase
     }
 
     /** @test */
-    public function salary_and_work_place_id_must_be_unsigned_when_adding_or_updating()
+    public function salary_must_be_unsigned_when_adding_or_updating()
     {
+        $permissions = setUpPermissionForUser();
+        signIn($permissions['user']);
+
         $response = $this->addWorker(
             $name = 'Test Worker',
             $shortName = 'Test',
@@ -130,12 +148,10 @@ class WorkerControllerTest extends TestCase
             $salary = -1,
             $workPlaceId = -1
         );
-        
         $response->assertSessionDoesntHaveErrors('name');
         $response->assertSessionDoesntHaveErrors('short_name');
         $response->assertSessionDoesntHaveErrors('job_title');
         $response->assertSessionHasErrors('salary');
-        $response->assertSessionHasErrors('work_place_id');
     }
 
     /** @test */
@@ -155,18 +171,13 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_worker_can_not_be_updated_by_not_logged_in_user()
     {
-        factory(WorkPlace::class)->create();
-        factory(Worker::class)->create();
+        $workPlace = factory(WorkPlace::class)->create();
+        $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
+        $workerDataForUpdate = factory(Worker::class)->raw();
 
-        $this->put('/api/worker', [
-            'name' => 'Test Worker',
-            'short_name' => 'Test',
-            'job_title' => 'Tester',
-            'work_place_id' => 1,
-            'salary' => 20,
-        ]);
-
-        $this->assertNotEquals('Test Worker', WorkPlace::first()->name);
+        $response = $this->json('put', '/api/worker/' . $worker->id, $workerDataForUpdate);
+        
+        $this->assertNotEquals($workerDataForUpdate['name'], Worker::first()->name);
     }
 
     /**
@@ -179,30 +190,7 @@ class WorkerControllerTest extends TestCase
         $salary = 18,
         $workPlaceId = 1
     ) {
-        Passport::actingAs(factory(User::class)->create());
-
         return $this->post('/api/worker', [
-            'name' => $name,
-            'short_name' => $shortName,
-            'job_title' => $jobTitle,
-            'work_place_id' => $workPlaceId,
-            'salary' => $salary,
-        ]);
-    }
-
-    /**
-     * Update Valid data except told otherwise
-     */
-    protected function updateWorker(
-        $name = 'Test Worker',
-        $shortName = 'Test',
-        $jobTitle = 'Tester',
-        $salary = 18,
-        $workPlaceId = 1
-    ) {
-        Passport::actingAs(factory(User::class)->create());
-
-        return $this->put('/api/worker/1', [
             'name' => $name,
             'short_name' => $shortName,
             'job_title' => $jobTitle,

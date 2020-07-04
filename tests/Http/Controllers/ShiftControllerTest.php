@@ -18,23 +18,14 @@ class ShiftControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    // protected function setUp() : void
-    // {
-    //     parent::setUp();
-    //     factory(WorkPlace::class)->create();
-    //     factory(Worker::class)->create();
-    // }
-
     /** @test */
     public function a_shift_can_be_added_to_schedule()
     {
-        $permission = setUpPermissionForUser();
-        Passport::actingAs($permission['user']);
+        $permissions = setUpPermissionForUser();
+        $shift = getShiftAndCreateWorker($permissions);
 
-        $worker = factory(Worker::class)->create(['user_id' => $permission['user']->id, 'work_place_id' => $permission['workPlace']->id]);
-        $shift = factory(Shift::class)->raw(['worker_id' => $worker->id, 'work_place_id' => $permission['workPlace']->id]);
-
-        $response = $this->post('api/shift', $shift);
+        signIn($permissions['user']);
+        $response = $this->post('api/shift', $shift['shift']);
         
         $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertCount(1, Shift::all());
@@ -43,12 +34,13 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function a_shift_can_be_updated()
     {
-        $this->withoutExceptionHandling();
+        $permissions = setUpPermissionForUser();
+        createShiftAndWorker($permissions);
 
-        factory(Shift::class)->create();
-        Passport::actingAs(factory(User::class)->create());
+        signIn($permissions['user']);
 
         $response = $this->json('put', 'api/shift/1', [
+            'work_place_id' => $permissions['workPlace']->id,
             'shift_start' => '12:00',
             'shift_end' => '22:00',
         ]);
@@ -60,58 +52,27 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function a_shift_can_be_deleted()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
-        factory(Shift::class)->create();
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
 
-        $this->delete('api/shift/1');
-
-        $this->assertCount(0, Shift::all());
-    }
-
-    /** @test */
-    public function a_shift_can_not_be_added_to_schedule_by_not_logged_user()
-    {
-        $response = $this->post('api/shift', [
-            'worker_id' => 1,
-            'work_place_id' => 1,
-            'day' => '2020-06-21',
-            'shift_start' => '09:00',
-            'shift_end' => '21:00',
-        ]);
-
-        $this->assertCount(0, Shift::all());
-    }
-
-    /** @test */
-    public function a_shift_can_not_be_updated_by_not_logged_user()
-    {
-        factory(Shift::class)->create();
-
-        $response = $this->json('put', 'api/shift/1', [
-            'shift_start' => '12:00',
-            'shift_end' => '22:00',
-        ]);
-
-        $this->assertNotEquals(Shift::first()->shift_end, '22:00');
-        $this->assertNotEquals(Shift::first()->shift_start, '12:00');
-    }
-
-    /** @test */
-    public function a_shift_can_not_be_deleted_by_not_logged_user()
-    {
-        factory(Shift::class)->create();
-
-        $this->delete('api/shift/1');
+        signIn($permission['user']);
 
         $this->assertCount(1, Shift::all());
+
+        $this->delete('api/shift/1');
+
+        $this->assertCount(0, Shift::all());
     }
 
     /** @test */
     public function all_fields_are_required_when_adding_shift()
     {
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
+
+        signIn($permission['user']);
 
         $response = $this->post('api/shift', [
             'worker_id' => null,
@@ -131,7 +92,10 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function worker_id_and_work_place_id_must_be_numeric_when_adding_and_updating()
     {
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
+
+        signIn($permission['user']);
 
         $response = $this->post('api/shift', [
             'worker_id' => 'test',
@@ -151,7 +115,10 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function worker_id_and_work_place_id_must_be_unsigned_when_adding_and_updating()
     {
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
+
+        signIn($permission['user']);
 
         $response = $this->post('api/shift', [
             'worker_id' => -1,
@@ -171,7 +138,10 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function day_must_be_date_with_format_Y_m_d_when_adding_and_updating()
     {
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
+
+        signIn($permission['user']);
 
         $response = $this->post('api/shift', [
             'worker_id' => 1,
@@ -191,7 +161,10 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function shift_start_and_shift_end_must_be_date_with_format_H_i_when_adding_and_updating()
     {
-        Passport::actingAs(factory(User::class)->create());
+        $permission = setUpPermissionForUser();
+        createShiftAndWorker($permission);
+
+        signIn($permission['user']);
 
         $response = $this->post('api/shift', [
             'worker_id' => 1,
