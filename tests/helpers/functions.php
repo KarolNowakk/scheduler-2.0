@@ -68,13 +68,26 @@ function createShiftAndWorker($attributes = [])
 
 function createShiftWorkerAndWorkPlace()
 {
-    $workPlace = factory(WorkPlace::class)->create();
+    $user = factory(User::class)->create();
+    $workPlace = factory(WorkPlace::class)->create(['created_by' => $user->id]);
     $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
     $shift = factory(Shift::class)->create(['worker_id' => $worker->id, 'work_place_id' => $workPlace->id]);
 
     return [
         'worker' => $worker,
         'shift' => $shift,
+        'workPlace' => $workPlace,
+    ];
+}
+
+function createWorkerAndWorkPlace()
+{
+    $user = factory(User::class)->create();
+    $workPlace = factory(WorkPlace::class)->create(['created_by' => $user->id]);
+    $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
+
+    return [
+        'worker' => $worker,
         'workPlace' => $workPlace,
     ];
 }

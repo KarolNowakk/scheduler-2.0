@@ -136,29 +136,6 @@ class WorkPlaceControllerTest extends TestCase
         $this->assertCount(1, WorkPlace::all());
     }
 
-    /** @test */
-    public function a_work_place_can_not_be_deleted_by_user_without_permissions()
-    {
-        $permissions = setUpPermissionForUser();
-        signIn($permissions['user']);
-
-        $response = $this->json('delete', '/api/work_place/' . $permissions['workPlace']->id);
-
-        $this->assertCount(1, WorkPlace::all());
-        $response->assertStatus(403);
-    }
-
-    /** @test */
-    public function a_work_place_can_not_be_updated_by_user_without_permissions()
-    {
-        $permissions = setUpPermissionForUser();
-        signIn();
-        $response = $this->json('put', '/api/work_place/' . $permissions['workPlace']->id, factory(WorkPlace::class)->raw());
-
-        $this->assertEquals($permissions['workPlace']->name, WorkPlace::first()->name);
-        $response->assertStatus(403);
-    }
-
     //-------------------------------------------- Testing Controllers Validation --------------------------------------------
 
     /** @test */

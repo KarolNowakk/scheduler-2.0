@@ -23,7 +23,7 @@ class AppPolicy
         if ($workPlace->createdBy->id == $user->id) {
             return true;
         }
-
+        $trueodfalse = Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
         return Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
     }
 
@@ -35,5 +35,6 @@ class AppPolicy
                 return true;
             }
         }
+        return false;
     }
 }
