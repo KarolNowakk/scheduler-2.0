@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Interfaces\ToUserRelationsInterface;
+use App\Observers\ModelEventObserver;
 use App\Traits\ToUserRelations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,6 +13,13 @@ class WorkPlace extends Model implements ToUserRelationsInterface
     use SoftDeletes, ToUserRelations;
     
     protected $guarded= ['id'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        self::observe(new ModelEventObserver);
+    }
 
     public function workers()
     {

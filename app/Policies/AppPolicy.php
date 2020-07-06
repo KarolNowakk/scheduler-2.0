@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Permission;
+use App\Worker;
 use App\User;
 use App\WorkPlace;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -23,7 +24,7 @@ class AppPolicy
         if ($workPlace->createdBy->id == $user->id) {
             return true;
         }
-        $trueodfalse = Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
+
         return Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
     }
 
@@ -36,5 +37,14 @@ class AppPolicy
             }
         }
         return false;
+    }
+
+    public function editAvailability(User $user, Worker $worker)
+    {
+        if ((isset($worker->belongsTo->id)) and ($worker->belongsTo->id == $user->id)) {
+            return true;
+        }
+        
+        return Permission::where('user_id', $user->id)->where('work_place_id', $worker->workPlace->id)->exists();
     }
 }

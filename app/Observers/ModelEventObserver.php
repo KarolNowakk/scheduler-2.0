@@ -4,39 +4,42 @@ namespace App\Observers;
 
 use App\WorkPlace;
 use Illuminate\Support\Facades\Auth;
+use App\Interfaces\ToUserRelationsInterface;
 
 class ModelEventObserver
 {
     /**
      * Handle the User "created" event.
      *
-     * @param  \App\User  $user
+     * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function created(WorkPlace $workPlace)
+    public function created(ToUserRelationsInterface $model)
     {
-        $workPlace->created_by = Auth::id();
+        $model->created_by = Auth::id();
     }
 
     /**
      * Handle the User "updated" event.
      *
-     * @param  \App\User  $user
+     * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function updated(WorkPlace $workPlace)
+    public function updated(ToUserRelationsInterface $model)
     {
-        $workPlace->updated_by = Auth::id();
+        $model->updated_by = Auth::id();
     }
 
     /**
      * Handle the User "deleted" event.
      *
-     * @param  \App\User  $user
+     * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function deleted(WorkPlace $workPlace)
+    public function deleted(ToUserRelationsInterface $model)
     {
-        $workPlace->deleted_by = Auth::id();
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($model))) {
+            $model->deleted_by = Auth::id();
+        }
     }
 }

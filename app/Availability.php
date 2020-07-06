@@ -5,25 +5,19 @@ namespace App;
 use App\Interfaces\ToUserRelationsInterface;
 use App\Traits\ToUserRelations;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Observers\ModelEventObserver;
 
-class Shift extends Model implements ToUserRelationsInterface
+class Availability extends Model implements ToUserRelationsInterface
 {
-    use SoftDeletes, ToUserRelations;
+    use ToUserRelations;
 
-    protected $guarded = [];
+    protected $guarded = ['id'];
 
     public static function boot()
     {
         parent::boot();
 
         self::observe(new ModelEventObserver);
-    }
-
-    public function workPlace()
-    {
-        return $this->belongsTo(WorkPlace::class, 'work_place_id');
     }
 
     public function worker()

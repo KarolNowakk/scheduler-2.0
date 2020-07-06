@@ -20,4 +20,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('/shift/{shift}', 'ShiftController@destroy');
     Route::get('/shift/{shift}', 'ShiftController@show');
     Route::get('/shifts/{?workPlace}', 'ShiftController@index');
+
+    Route::post('/availability/{worker}', 'AvailabilityController@store');
+    Route::put('/availability/{availability}', 'AvailabilityController@update');
+    Route::post('/availability/{availability}', 'AvailabilityController@destroy');
 });

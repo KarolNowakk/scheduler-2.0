@@ -2,6 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
+use App\Availability;
 use App\Shift;
 use App\User;
 use App\Worker;
@@ -55,5 +56,13 @@ $factory->define(Permission::class, function (Faker $faker) {
         'work_place_id' => random_int(1, 2),
         'type' => $faker->randomElement(['can_edit', 'can_create']),
         'created_by' => random_int(1, 5)
+    ];
+});
+
+$factory->define(Availability::class, function (Faker $faker) {
+    return [
+        'day' => $faker->date('Y-m-d'),
+        'start' => $faker->time('H:i'),
+        'end' => $faker->time('H:i'),
     ];
 });
