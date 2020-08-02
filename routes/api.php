@@ -1,5 +1,6 @@
 <?php
 
+use App\Permission;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['auth:api']], function () {
@@ -8,6 +9,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('/work_place/{workPlace}', 'WorkPlaceController@destroy');
     Route::get('/work_place/{workPlace}', 'WorkPlaceController@show');
     Route::get('/work_place', 'WorkPlaceController@index');
+
+    Route::post('/permission', 'PermissionController@store');
+    Route::post('/permission/{permission}', 'PermissionController@destroy');
 
     Route::post('/worker', 'WorkerController@store');
     Route::put('/worker/{worker}', 'WorkerController@update');

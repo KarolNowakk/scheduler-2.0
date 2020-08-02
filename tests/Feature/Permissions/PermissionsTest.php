@@ -3,6 +3,7 @@
 namespace Tests\Feature\Permissions;
 
 use App\Shift;
+use App\User;
 use App\Worker;
 use App\WorkPlace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,8 +73,8 @@ class PermissionsTest extends TestCase
 
         $response = $this->json('delete', '/api/work_place/' . $permissions['workPlace']->id);
 
-        $this->assertCount(1, WorkPlace::all());
         $response->assertStatus(403);
+        $this->assertCount(1, WorkPlace::all());
     }
 
     /** @test */

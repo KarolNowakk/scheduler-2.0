@@ -12,12 +12,12 @@ use Laravel\Passport\Passport;
 
 function setUpPermissionForUser($user = null, $type = 'can_edit')
 {
+    $creator_of_work_place = factory(User::class)->create();
     if (! $user) {
         $user = factory(User::class)->create();
     }
-    signIn($user);
-    $creator_of_work_place = factory(User::class)->create();
     $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
+    signIn($user);
     $permission = factory(Permission::class)->create([
         'user_id' =>  $user->id,
         'work_place_id' => $workPlace->id,

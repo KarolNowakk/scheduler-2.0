@@ -19,6 +19,11 @@ class AppPolicy
         return $workPlace->createdBy->is($user);
     }
 
+    public function grantPermission(User $user, WorkPlace $workPlace)
+    {
+        return $workPlace->createdBy->is($user);
+    }
+
     public function edit(User $user, WorkPlace $workPlace)
     {
         if ($workPlace->createdBy->is($user)) {

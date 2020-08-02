@@ -32,7 +32,42 @@ class PermissionController extends Controller
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return response()->json(['success' => 'Work place has been created'], ResponseStatus::HTTP_OK);
+        return response()->json(['success' => 'Permission has been created'], ResponseStatus::HTTP_OK);
+    }
+
+    /**
+     * Grant a permission
+     *
+     * @param Response $response
+     * @param Permission $permission
+     * @return json
+     */
+    public function destroy(Permission $permission)
+    {
+        if ($this->userHasNoPermissions($permission)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+        
+        if (! $permission->delete()) {
+            return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json(['success' => 'Permission has been deleted'], ResponseStatus::HTTP_OK);
+    }
+
+    /**
+     * Validate incoming data
+     *
+     * @param array $data
+     * @return Validator
+     */
+    protected function storeValidator(array $data)
+    {
+        return Validator::make($data, [
+            'user_id' => 'numeric|required',
+            'work_place_id' => 'numeric|required',
+            'type' => 'in:can_edit,can_create|required',
+        ]);
     }
 
     /**
@@ -45,10 +80,10 @@ class PermissionController extends Controller
     {
         if ($item instanceof Request) {
             $workPlace = WorkPlace::findOrFail($item->get('work_place_id'));
-        } elseif ($item instanceof Worker) {
+        } elseif ($item instanceof Permission) {
             $workPlace = $item->workPlace;
         }
 
-        return (Gate::denies('edit', $workPlace));
+        return (Gate::denies('grantPermission', $workPlace));
     }
 }

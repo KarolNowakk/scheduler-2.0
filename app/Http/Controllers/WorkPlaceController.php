@@ -85,7 +85,7 @@ class WorkPlaceController extends Controller
         if (Gate::denies('delete', $workPlace)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
-
+        
         if (!$workPlace->delete()) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
