@@ -16,23 +16,25 @@ class AppPolicy
 
     public function delete(User $user, WorkPlace $workPlace)
     {
-        return $workPlace->createdBy->id == $user->id;
+        return $workPlace->createdBy->is($user);
     }
 
     public function edit(User $user, WorkPlace $workPlace)
     {
-        if ($workPlace->createdBy->id == $user->id) {
+        if ($workPlace->createdBy->is($user)) {
             return true;
         }
 
-        return Permission::where('user_id', $user->id)->where('work_place_id', $workPlace->id)->exists();
+        return Permission::where('type', 'edit')
+            ->where('user_id', $user->id)
+            ->where('work_place_id', $workPlace->id)
+            ->exists();
     }
 
     public function accessToView(User $user, WorkPlace $workPlace)
     {
         foreach ($user->worksAs as $worker) {
-            if ($worker->workPlace->id == $workPlace->id) {
-                // dd($worker->workPlace->id, $workPlace->id);
+            if ($worker->workPlace->is($workPlace)) {
                 return true;
             }
         }
@@ -41,10 +43,13 @@ class AppPolicy
 
     public function editAvailability(User $user, Worker $worker)
     {
-        if ((isset($worker->belongsTo->id)) and ($worker->belongsTo->id == $user->id)) {
+        if ((isset($worker->belongsToUser)) and ($worker->belongsToUser->is($user))) {
             return true;
         }
         
-        return Permission::where('user_id', $user->id)->where('work_place_id', $worker->workPlace->id)->exists();
+        return Permission::where('type', 'edit')
+            ->where('user_id', $user->id)
+            ->where('work_place_id', $worker->workPlace->id)
+            ->exists();
     }
 }

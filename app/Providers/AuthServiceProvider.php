@@ -17,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\WorkPlace::class => \App\Policies\AppPolicy::class,
         \App\Shift::class => \App\Policies\AppPolicy::class,
         \App\Worker::class => \App\Policies\AppPolicy::class,
+        \App\Accessibility::class => \App\Policies\AppPolicy::class,
     ];
 
     /**

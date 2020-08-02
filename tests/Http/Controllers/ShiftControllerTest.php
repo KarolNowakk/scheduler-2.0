@@ -3,15 +3,9 @@
 namespace Tests\Http\Controllers;
 
 use App\Shift;
-use App\User;
-use App\Worker;
-use App\WorkPlace;
-use App\Permission;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 
 class ShiftControllerTest extends TestCase
@@ -21,12 +15,14 @@ class ShiftControllerTest extends TestCase
     /** @test */
     public function a_shift_can_be_added_to_schedule()
     {
+        $firstUser = signIn();
         $permissions = setUpPermissionForUser();
         $shift = getShiftAndCreateWorker($permissions);
+        $firstUser->tokens()->each(fn ($token) => $token->delete());
 
         signIn($permissions['user']);
         $response = $this->json('post', 'api/shift', $shift['shift']);
-        
+
         $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertCount(1, Shift::all());
     }
@@ -42,7 +38,7 @@ class ShiftControllerTest extends TestCase
         $response = $this->json('put', 'api/shift/' . $shiftAndWorker['shift']->id, [
             'shift_start' => '12:00',
             'shift_end' => '22:00',
-        ]); 
+        ]);
 
         $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertEquals(Shift::first()->shift_end, '22:00');

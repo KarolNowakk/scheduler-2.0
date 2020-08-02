@@ -20,7 +20,7 @@ class CreateAvailabilitiesTable extends Migration
             $table->time('start');
             $table->time('end');
             $table->unsignedBigInteger('created_by');
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('updated_by');
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();

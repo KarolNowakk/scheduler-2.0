@@ -64,5 +64,6 @@ $factory->define(Availability::class, function (Faker $faker) {
         'day' => $faker->date('Y-m-d'),
         'start' => $faker->time('H:i'),
         'end' => $faker->time('H:i'),
+        'worker_id' => null,
     ];
 });

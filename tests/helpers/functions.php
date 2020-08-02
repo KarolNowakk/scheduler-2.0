@@ -5,6 +5,9 @@ use App\WorkPlace;
 use App\Permission;
 use App\Worker;
 use App\Shift;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Passport;
 
 function setUpPermissionForUser($user = null, $type = 'can_edit')
@@ -12,6 +15,7 @@ function setUpPermissionForUser($user = null, $type = 'can_edit')
     if (! $user) {
         $user = factory(User::class)->create();
     }
+    signIn($user);
     $creator_of_work_place = factory(User::class)->create();
     $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
     $permission = factory(Permission::class)->create([
@@ -28,6 +32,8 @@ function setUpPermissionForUser($user = null, $type = 'can_edit')
     ];
 }
 
+
+
 function signIn($user = null)
 {
     if (!$user) {
@@ -37,6 +43,23 @@ function signIn($user = null)
     Passport::actingAs($user);
 
     return $user;
+}
+
+function signOut(User $user = null)
+{
+    if (! $user) {
+        if (Auth::check()) {
+            Auth::user()->tokens->each(function ($token) {
+                $token->delete();
+            });
+            return;
+        }
+        return;
+    }
+
+    $user->tokens->each(function ($token) {
+        $token->delete();
+    });
 }
 
 function getShiftAndCreateWorker($attributes = [])
@@ -69,10 +92,9 @@ function createShiftAndWorker($attributes = [])
 function createShiftWorkerAndWorkPlace()
 {
     $user = factory(User::class)->create();
-    $workPlace = factory(WorkPlace::class)->create(['created_by' => $user->id]);
+    $workPlace = factory(WorkPlace::class)->create();
     $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
     $shift = factory(Shift::class)->create(['worker_id' => $worker->id, 'work_place_id' => $workPlace->id]);
-
     return [
         'worker' => $worker,
         'shift' => $shift,
@@ -83,7 +105,7 @@ function createShiftWorkerAndWorkPlace()
 function createWorkerAndWorkPlace()
 {
     $user = factory(User::class)->create();
-    $workPlace = factory(WorkPlace::class)->create(['created_by' => $user->id]);
+    $workPlace = factory(WorkPlace::class)->create();
     $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
 
     return [

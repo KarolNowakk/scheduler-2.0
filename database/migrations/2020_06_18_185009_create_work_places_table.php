@@ -18,8 +18,8 @@ class CreateWorkPlacesTable extends Migration
             $table->string('name');
             $table->string('logo_path')->nullable();
             $table->string('address')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('updated_by');
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();

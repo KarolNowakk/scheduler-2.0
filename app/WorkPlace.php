@@ -13,14 +13,7 @@ class WorkPlace extends Model implements ToUserRelationsInterface
     use SoftDeletes, ToUserRelations;
     
     protected $guarded= ['id'];
-
-    public static function boot()
-    {
-        parent::boot();
-
-        self::observe(new ModelEventObserver);
-    }
-
+    
     public function workers()
     {
         return $this->hasMany(Worker::class, 'work_place_id');

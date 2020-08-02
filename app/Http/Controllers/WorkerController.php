@@ -35,7 +35,7 @@ class WorkerController extends Controller
      */
     public function index(WorkPlace $workPlace)
     {
-        if (Gate::denies('accessToView', $worker->workPlace)) {
+        if (Gate::denies('accessToView', $workPlace)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
@@ -59,8 +59,6 @@ class WorkerController extends Controller
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
         
-        $data['created_by'] = Auth::id();
-
         $created = Worker::create($data);
 
         if (!$created) {
@@ -83,8 +81,6 @@ class WorkerController extends Controller
         if ($this->userHasNoPermissions($worker)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
-
-        $data['updated_by'] = Auth::id();
 
         if (!$worker->update($data)) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
@@ -148,8 +144,8 @@ class WorkerController extends Controller
     /**
      * Check users permissions
      *
-     * @param Request $request
-     * @return json : void
+     * @param $item
+     * @return boolean
      */
     protected function userHasNoPermissions($item)
     {

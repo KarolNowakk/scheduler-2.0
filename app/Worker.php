@@ -14,13 +14,6 @@ class Worker extends Model implements ToUserRelationsInterface
 
     protected $guarded = [];
 
-    public static function boot()
-    {
-        parent::boot();
-
-        self::observe(new ModelEventObserver);
-    }
-
     public function workPlace()
     {
         return $this->belongsTo(WorkPlace::class, 'work_place_id');

@@ -22,7 +22,7 @@ class CreateShiftsTable extends Migration
             $table->time('shift_start');
             $table->time('shift_end');
             $table->unsignedBigInteger('created_by');
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('updated_by');
             $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();

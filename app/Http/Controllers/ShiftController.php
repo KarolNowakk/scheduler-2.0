@@ -26,8 +26,6 @@ class ShiftController extends Controller
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
-        $data['created_by'] = Auth::id();
-
         $created = Shift::create($data);
 
         if (!$created) {
@@ -51,7 +49,6 @@ class ShiftController extends Controller
         if ($this->userHasNoPermissions($shift)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
-        $data['updated_by'] = Auth::id();
 
         if (!$shift->update($data)) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\WorkPlace;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 use Laravel\Passport\Passport;
 
@@ -57,6 +58,7 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_can_be_created()
     {
+        $this->withoutExceptionHandling();
         $response = $this->addWorkPlace();
 
         $this->assertCount(1, WorkPlace::all());
@@ -85,10 +87,9 @@ class WorkPlaceControllerTest extends TestCase
     public function a_work_place_can_be_deleted_by_its_creator()
     {
         $creator_of_work_place = factory(User::class)->create();
-        $workPlace = factory(WorkPlace::class)->create(['created_by' => $creator_of_work_place->id]);
-        
         signIn($creator_of_work_place);
-
+        $workPlace = factory(WorkPlace::class)->create();
+        
         $response = $this->delete('api/work_place/1');
         
         $this->assertCount(0, WorkPlace::all());
@@ -111,7 +112,9 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_cannot_be_updated_by_not_logged_user()
     {
+        signIn(factory(User::class)->create());
         factory(WorkPlace::class)->create();
+        signOut();
 
         $this->json('put', '/api/work_place/1', [
             'name' => 'TestUpdate',
@@ -125,13 +128,9 @@ class WorkPlaceControllerTest extends TestCase
     /** @test */
     public function a_work_place_cannot_be_deleted_by_not_logged_user()
     {
-        factory(WorkPlace::class)->create();
+        $workPlace = factory(WorkPlace::class)->create();
 
-        $this->json('delete', '/api/work_place/1', [
-            'name' => 'TestUpdate',
-            'logo_path' => 'public/photos/logos/testlogo.jpg',
-            'address' => 'Test Street 1, Test City',
-        ]);
+        $this->json('delete', '/api/work_place/' . $workPlace->id);
 
         $this->assertCount(1, WorkPlace::all());
     }

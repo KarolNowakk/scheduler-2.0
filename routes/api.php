@@ -23,5 +23,5 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::post('/availability/{worker}', 'AvailabilityController@store');
     Route::put('/availability/{availability}', 'AvailabilityController@update');
-    Route::post('/availability/{availability}', 'AvailabilityController@destroy');
+    Route::delete('/availability/{availability}', 'AvailabilityController@destroy');
 });

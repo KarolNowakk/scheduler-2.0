@@ -2,44 +2,67 @@
 
 namespace App\Observers;
 
-use App\WorkPlace;
+use App\Availability;
 use Illuminate\Support\Facades\Auth;
-use App\Interfaces\ToUserRelationsInterface;
+use app\Interfaces\ToUserRelationsInterface;
 
 class ModelEventObserver
 {
     /**
-     * Handle the User "created" event.
+     * Handle the Model "creating" event.
      *
      * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function created(ToUserRelationsInterface $model)
+    public function creating(ToUserRelationsInterface $model)
     {
-        $model->created_by = Auth::id();
+        if (Auth::check()) {
+            $model->updated_by = Auth::id();
+            $model->created_by = Auth::id();
+        } else {
+            $model->updated_by = 1;
+            $model->created_by = 1;
+        }
     }
 
     /**
-     * Handle the User "updated" event.
+     * Handle the Model "updating" event.
      *
      * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function updated(ToUserRelationsInterface $model)
+    public function updating(ToUserRelationsInterface $model)
     {
-        $model->updated_by = Auth::id();
+        if (Auth::check()) {
+            $model->updated_by = Auth::id();
+            $model->created_by = Auth::id();
+        } else {
+            $model->updated_by = 1;
+            $model->created_by = 1;
+        }
     }
 
     /**
-     * Handle the User "deleted" event.
+     * Handle the Model "deleting" event.
      *
      * @param  ToUserRelationsInterface  $model
      * @return void
      */
-    public function deleted(ToUserRelationsInterface $model)
+    public function deleting(ToUserRelationsInterface $model)
     {
-        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($model))) {
+        if ($this->usesSoftDelete($model)) {
             $model->deleted_by = Auth::id();
         }
+    }
+
+    /**
+     * Checks if Model uses softDelete trait
+     *
+     * @param  ToUserRelationsInterface  $model
+     * @return boolean
+     */
+    protected function usesSoftDelete(ToUserRelationsInterface $model)
+    {
+        return in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($model));
     }
 }

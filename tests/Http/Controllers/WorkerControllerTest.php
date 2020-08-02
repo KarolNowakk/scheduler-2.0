@@ -2,18 +2,19 @@
 
 namespace Tests\Http\Controllers;
 
-use App\User;
 use App\Worker;
 use App\WorkPlace;
+use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Mockery;
 use Tests\TestCase;
-use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
+use Tests\HelperTrait;
 
 class WorkerControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase, WithFaker, HelperTrait;
 
     /** @test */
     public function a_single_worker_can_be_shown()
@@ -171,11 +172,10 @@ class WorkerControllerTest extends TestCase
     /** @test */
     public function a_worker_can_not_be_updated_by_not_logged_in_user()
     {
-        $workPlace = factory(WorkPlace::class)->create();
-        $worker = factory(Worker::class)->create(['work_place_id' => $workPlace->id]);
+        $data = createWorkerAndWorkPlace();
         $workerDataForUpdate = factory(Worker::class)->raw();
 
-        $response = $this->json('put', '/api/worker/' . $worker->id, $workerDataForUpdate);
+        $response = $this->json('put', '/api/worker/' . $data['worker']->id, $workerDataForUpdate);
         
         $this->assertNotEquals($workerDataForUpdate['name'], Worker::first()->name);
     }

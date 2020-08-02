@@ -21,12 +21,11 @@ class AvailabilityController extends Controller
      */
     public function store(Request $request, Worker $worker)
     {
-        $data = $this->validator($request->all())->validate();
+        $data = $this->creatingValidator($request->all())->validate();
+        
         if ($this->userHasNoPermissions($worker)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
-        $data['created_by'] = Auth::id();
-
 
         $created = $worker->availability()->create($data);
 
@@ -46,11 +45,11 @@ class AvailabilityController extends Controller
      */
     public function update(Request $request, Availability $availability)
     {
-        $data = $this->validator($request->all())->validate();
+        $data = $this->updatingValidator($request->all())->validate();
+
         if ($this->userHasNoPermissions($availability)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
-        $data['updated_by'] = Auth::id();
 
         $updated = $availability->update($data);
 
@@ -62,18 +61,53 @@ class AvailabilityController extends Controller
     }
 
     /**
+     * Delete Availability
+     *
+     * @param Shift $shift
+     * @return json
+     */
+    public function destroy(Availability $availability)
+    {
+        if ($this->userHasNoPermissions($availability)) {
+            return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
+        }
+
+        if (!$availability->delete()) {
+            return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json(['success' => 'Availability has been deleted'], ResponseStatus::HTTP_OK);
+    }
+
+    /**
      * Validate incoming data
      *
      * @param array $data
      * @param string $reqestType
      * @return Validator
      */
-    protected function validator($data)
+    protected function creatingValidator($data)
     {
         return Validator::make($data, [
             'day' => 'date_format:Y-m-d|required',
             'start' => 'date_format:H:i|required',
             'end' => 'date_format:H:i|required',
+        ]);
+    }
+
+    /**
+     * Validate incoming data
+     *
+     * @param array $data
+     * @param string $reqestType
+     * @return Validator
+     */
+    protected function updatingValidator($data)
+    {
+        return Validator::make($data, [
+            'day' => 'date_format:Y-m-d',
+            'start' => 'date_format:H:i',
+            'end' => 'date_format:H:i',
         ]);
     }
 

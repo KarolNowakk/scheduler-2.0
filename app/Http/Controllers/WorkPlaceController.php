@@ -42,7 +42,6 @@ class WorkPlaceController extends Controller
     public function store(Request $request)
     {
         $data = $this->validator($request->all())->validate();
-        $data['created_by'] = Auth::id();
 
         $created = WorkPlace::create($data);
 
@@ -67,7 +66,6 @@ class WorkPlaceController extends Controller
         }
 
         $data = $this->validator($request->all())->validate();
-        $data['updated_by'] = Auth::id();
 
         if (!$workPlace->update($data)) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);

@@ -13,13 +13,6 @@ class Availability extends Model implements ToUserRelationsInterface
 
     protected $guarded = ['id'];
 
-    public static function boot()
-    {
-        parent::boot();
-
-        self::observe(new ModelEventObserver);
-    }
-
     public function worker()
     {
         return $this->belongsTo(Worker::class, 'worker_id');
