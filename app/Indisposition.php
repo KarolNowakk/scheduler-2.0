@@ -7,7 +7,7 @@ use App\Traits\ToUserRelations;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\ModelEventObserver;
 
-class Availability extends Model implements ToUserRelationsInterface
+class Indisposition extends Model implements ToUserRelationsInterface
 {
     use ToUserRelations;
 

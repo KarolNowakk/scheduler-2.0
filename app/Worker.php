@@ -29,8 +29,8 @@ class Worker extends Model implements ToUserRelationsInterface
         return $this->hasMany(Shift::class, 'worker_id');
     }
 
-    public function availability()
+    public function Indisposition()
     {
-        return $this->hasMany(Availability::class, 'worker_id');
+        return $this->hasMany(Indisposition::class, 'worker_id');
     }
 }

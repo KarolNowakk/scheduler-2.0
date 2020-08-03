@@ -2,7 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Availability;
+use App\Indisposition;
 use App\Shift;
 use App\User;
 use App\Worker;
@@ -59,9 +59,10 @@ $factory->define(Permission::class, function (Faker $faker) {
     ];
 });
 
-$factory->define(Availability::class, function (Faker $faker) {
+$factory->define(Indisposition::class, function (Faker $faker) {
     return [
-        'day' => $faker->date('Y-m-d'),
+        'month' => $faker->date('Y-m'),
+        'day' => $faker->date('d'),
         'start' => $faker->time('H:i'),
         'end' => $faker->time('H:i'),
         'worker_id' => null,

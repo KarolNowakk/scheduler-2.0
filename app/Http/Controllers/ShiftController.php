@@ -119,7 +119,6 @@ class ShiftController extends Controller
     protected function userHasNoPermissions($item)
     {
         if ($item instanceof Request) {
-            $workPlace1 = $item->get('work_place_id');
             $workPlace = WorkPlace::findOrFail($item->get('work_place_id'));
         } elseif ($item instanceof Shift) {
             $workPlace = $item->workPlace;

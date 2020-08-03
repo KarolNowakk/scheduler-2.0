@@ -48,6 +48,7 @@ class PermissionControllerTest extends TestCase
     /** @test */
     public function a_permission_can_be_granted()
     {
+        $this->withoutExceptionHandling();
         $userWithoutPermissions = factory(User::class)->create();
 
         $response = $this->json('post', 'api/permission', [

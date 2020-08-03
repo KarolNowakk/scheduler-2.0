@@ -7,8 +7,6 @@ use App\Worker;
 use App\User;
 use App\WorkPlace;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AppPolicy
 {
@@ -30,7 +28,7 @@ class AppPolicy
             return true;
         }
 
-        return Permission::where('type', 'edit')
+        return Permission::where('type', 'can_edit')
             ->where('user_id', $user->id)
             ->where('work_place_id', $workPlace->id)
             ->exists();
@@ -46,13 +44,13 @@ class AppPolicy
         return false;
     }
 
-    public function editAvailability(User $user, Worker $worker)
+    public function editIndisposition(User $user, Worker $worker)
     {
         if ((isset($worker->belongsToUser)) and ($worker->belongsToUser->is($user))) {
             return true;
         }
         
-        return Permission::where('type', 'edit')
+        return Permission::where('type', 'can_edit')
             ->where('user_id', $user->id)
             ->where('work_place_id', $worker->workPlace->id)
             ->exists();

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Availability;
+use App\Indisposition;
 use App\Worker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 
-class AvailabilityController extends Controller
+class IndispositionController extends Controller
 {
     /**
      * Store newly created data
@@ -27,56 +27,56 @@ class AvailabilityController extends Controller
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
-        $created = $worker->availability()->create($data);
+        $created = $worker->Indisposition()->create($data);
 
         if (!$created) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return response()->json(['success' => 'Availability has been created'], ResponseStatus::HTTP_OK);
+        return response()->json(['success' => 'Indisposition has been created'], ResponseStatus::HTTP_OK);
     }
 
     /**
      * Upadate data
      *
      * @param Request $request
-     * @param Availability $availability
+     * @param Indisposition $Indisposition
      * @return json
      */
-    public function update(Request $request, Availability $availability)
+    public function update(Request $request, Indisposition $Indisposition)
     {
         $data = $this->updatingValidator($request->all())->validate();
 
-        if ($this->userHasNoPermissions($availability)) {
+        if ($this->userHasNoPermissions($Indisposition)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
-        $updated = $availability->update($data);
+        $updated = $Indisposition->update($data);
 
         if (!$updated) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return response()->json(['success' => 'Availability has been updated'], ResponseStatus::HTTP_OK);
+        return response()->json(['success' => 'Indisposition has been updated'], ResponseStatus::HTTP_OK);
     }
 
     /**
-     * Delete Availability
+     * Delete Indisposition
      *
      * @param Shift $shift
      * @return json
      */
-    public function destroy(Availability $availability)
+    public function destroy(Indisposition $Indisposition)
     {
-        if ($this->userHasNoPermissions($availability)) {
+        if ($this->userHasNoPermissions($Indisposition)) {
             return response()->json(['error' => 'Access denied.'], ResponseStatus::HTTP_FORBIDDEN);
         }
 
-        if (!$availability->delete()) {
+        if (!$Indisposition->delete()) {
             return response()->json(['error' => 'An error occured.'], ResponseStatus::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return response()->json(['success' => 'Availability has been deleted'], ResponseStatus::HTTP_OK);
+        return response()->json(['success' => 'Indisposition has been deleted'], ResponseStatus::HTTP_OK);
     }
 
     /**
@@ -89,7 +89,8 @@ class AvailabilityController extends Controller
     protected function creatingValidator($data)
     {
         return Validator::make($data, [
-            'day' => 'date_format:Y-m-d|required',
+            'month' => 'date_format:Y-m|required',
+            'day' => 'date_format:d|required',
             'start' => 'date_format:H:i|required',
             'end' => 'date_format:H:i|required',
         ]);
@@ -105,7 +106,8 @@ class AvailabilityController extends Controller
     protected function updatingValidator($data)
     {
         return Validator::make($data, [
-            'day' => 'date_format:Y-m-d',
+            'month' => 'date_format:Y-m',
+            'day' => 'date_format:d',
             'start' => 'date_format:H:i',
             'end' => 'date_format:H:i',
         ]);
@@ -119,9 +121,9 @@ class AvailabilityController extends Controller
      */
     protected function userHasNoPermissions($item)
     {
-        if ($item instanceof Availability) {
+        if ($item instanceof Indisposition) {
             $item = $item->worker;
         }
-        return (Gate::denies('editAvailability', $item));
+        return (Gate::denies('editIndisposition', $item));
     }
 }

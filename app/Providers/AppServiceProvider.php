@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Availability;
+use App\Indisposition;
 use App\Observers\ModelEventObserver;
 use App\Permission;
 use App\Shift;
@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         WorkPlace::observe(ModelEventObserver::class);
         Worker::observe(ModelEventObserver::class);
         Permission::observe(ModelEventObserver::class);
-        Availability::observe(ModelEventObserver::class);
+        Indisposition::observe(ModelEventObserver::class);
         Shift::observe(ModelEventObserver::class);
     }
 }

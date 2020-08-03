@@ -2,7 +2,7 @@
 
 namespace Tests\Http\Controllers;
 
-use App\Availability;
+use App\Indisposition;
 use App\Worker;
 use App\WorkPlace;
 use App\User;
@@ -12,7 +12,7 @@ use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 
-class AvailabilityControllerTest extends TestCase
+class IndispositionControllerTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -25,6 +25,7 @@ class AvailabilityControllerTest extends TestCase
         parent::setUp();
 
         $this->workPlace = factory(WorkPlace::class)->create();
+        factory(User::class)->create();
         $this->user = signIn();
         $this->worker = factory(Worker::class)->create([
             'user_id' => $this->user->id,
@@ -47,88 +48,88 @@ class AvailabilityControllerTest extends TestCase
     }
 
     /** @test */
-    public function an_avaiability_can_be_created()
+    public function an_indisposition_can_be_created()
     {
         $this->withoutExceptionHandling();
 
-        $availability = factory(Availability::class)->raw();
+        $Indisposition = factory(Indisposition::class)->raw();
         
-        $response = $this->json('post', 'api/availability/' . $this->worker->id, $availability);
+        $response = $this->json('post', 'api/indisposition/' . $this->worker->id, $Indisposition);
         $response->assertStatus(ResponseStatus::HTTP_OK);
-        $this->assertCount(1, Availability::all());
+        $this->assertCount(1, Indisposition::all());
     }
 
     /** @test */
-    public function an_avaiability_can_be_updated()
+    public function an_indisposition_can_be_updated()
     {
         $this->withoutExceptionHandling();
 
-        $availability = factory(Availability::class)->create(['worker_id' => $this->worker->id]);
-        $availabilityToSend = factory(Availability::class)->raw();
+        $Indisposition = factory(Indisposition::class)->create(['worker_id' => $this->worker->id]);
+        $IndispositionToSend = factory(Indisposition::class)->raw();
         
-        $response = $this->json('put', 'api/availability/' . $availability->id, $availabilityToSend);
+        $response = $this->json('put', 'api/indisposition/' . $Indisposition->id, $IndispositionToSend);
         
         $response->assertStatus(ResponseStatus::HTTP_OK);
-        $this->assertEquals($availabilityToSend['start'], Availability::first()->start);
+        $this->assertEquals($IndispositionToSend['start'], Indisposition::first()->start);
     }
 
     /** @test */
-    public function an_avaiability_can_be_deleted()
+    public function an_indisposition_can_be_deleted()
     {
         $this->withoutExceptionHandling();
 
-        $availability = factory(Availability::class)->create(['worker_id' => $this->worker->id]);
+        $Indisposition = factory(Indisposition::class)->create(['worker_id' => $this->worker->id]);
         
-        $response = $this->json('delete', 'api/availability/' . $availability->id);
+        $response = $this->json('delete', 'api/indisposition/' . $Indisposition->id);
         
         $response->assertStatus(ResponseStatus::HTTP_OK);
-        $this->assertCount(0, Availability::all());
+        $this->assertCount(0, Indisposition::all());
     }
 
     // ---------------------------------------------------------
 
     /** @test */
-    public function an_avaiability_can_not_be_created_by_user_without_permissions()
+    public function an_indisposition_can_not_be_created_by_user_without_permissions()
     {
         $userWithoutPermissions = factory(User::class)->create();
         Passport::actingAs($userWithoutPermissions);
 
-        $availability = factory(Availability::class)->raw();
+        $Indisposition = factory(Indisposition::class)->raw();
         
-        $response = $this->json('post', 'api/availability/' . $this->worker->id, $availability);
+        $response = $this->json('post', 'api/indisposition/' . $this->worker->id, $Indisposition);
         $response->assertStatus(ResponseStatus::HTTP_FORBIDDEN);
-        $this->assertCount(0, Availability::all());
+        $this->assertCount(0, Indisposition::all());
     }
 
     /** @test */
-    public function an_avaiability_can_not_be_updated_by_user_without_permissions()
+    public function an_indisposition_can_not_be_updated_by_user_without_permissions()
     {
         $this->withoutExceptionHandling();
 
-        $availability = factory(Availability::class)->create(['worker_id' => $this->worker->id]);
+        $Indisposition = factory(Indisposition::class)->create(['worker_id' => $this->worker->id]);
         
         $userWithoutPermissions = factory(User::class)->create();
         Passport::actingAs($userWithoutPermissions);
 
-        $response = $this->json('delete', 'api/availability/' . $availability->id);
+        $response = $this->json('delete', 'api/indisposition/' . $Indisposition->id);
         
         $response->assertStatus(ResponseStatus::HTTP_FORBIDDEN);
-        $this->assertCount(1, Availability::all());
+        $this->assertCount(1, Indisposition::all());
     }
 
     /** @test */
-    public function an_avaiability_can_not_be_deleted_by_user_without_permissions()
+    public function an_indisposition_can_not_be_deleted_by_user_without_permissions()
     {
         $userWithoutPermissions = factory(User::class)->create();
-        $availability = factory(Availability::class)->create(['worker_id' => $this->worker->id]);
+        $Indisposition = factory(Indisposition::class)->create(['worker_id' => $this->worker->id]);
 
         Passport::actingAs($userWithoutPermissions);
 
-        $availabilityDataToSend = factory(Availability::class)->raw();
+        $IndispositionDataToSend = factory(Indisposition::class)->raw();
         
-        $response = $this->json('put', 'api/availability/' . $availability->id, $availabilityDataToSend);
+        $response = $this->json('put', 'api/indisposition/' . $Indisposition->id, $IndispositionDataToSend);
         $response->assertStatus(ResponseStatus::HTTP_FORBIDDEN);
-        $this->assertNotEquals($availabilityDataToSend['start'], Availability::first()->start);
+        $this->assertNotEquals($IndispositionDataToSend['start'], Indisposition::first()->start);
     }
 
     // ---------------------------------------------------------
@@ -137,7 +138,7 @@ class AvailabilityControllerTest extends TestCase
     public function day_start_and_end_are_required_when_creating()
     {
         // $this->withoutExceptionHandling();
-        $response = $this->post('api/availability/' . $this->worker->id, [
+        $response = $this->post('api/indisposition/' . $this->worker->id, [
             'day' => '',
             'start' => '',
             'end' => '',
@@ -152,7 +153,7 @@ class AvailabilityControllerTest extends TestCase
     public function day_start_and_end_has_to_be_date_when_creating()
     {
         // $this->withoutExceptionHandling();
-        $response = $this->post('api/availability/' . $this->worker->id, [
+        $response = $this->post('api/indisposition/' . $this->worker->id, [
             'day' => 'fasd',
             'start' => 'sdaf',
             'end' => 'sdaf',

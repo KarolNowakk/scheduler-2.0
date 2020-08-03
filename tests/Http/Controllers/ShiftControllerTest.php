@@ -3,6 +3,10 @@
 namespace Tests\Http\Controllers;
 
 use App\Shift;
+use App\WorkPlace;
+use App\Worker;
+use App\User;
+use App\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -12,16 +16,52 @@ class ShiftControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    protected $workPlace;
+    protected $worker;
+    protected $user;
+
+    protected function setUp() : void
+    {
+        parent::setUp();
+
+        $this->workPlace = factory(WorkPlace::class)->create();
+        factory(User::class)->create();
+
+        $this->user = signIn();
+        factory(Permission::class)->create([
+            'user_id' => $this->user->id,
+            'work_place_id' => $this->workPlace->id,
+            'type' => 'can_edit'
+        ]);
+        $this->worker = factory(Worker::class)->create([
+            'user_id' => $this->user->id,
+            'work_place_id' => $this->workPlace->id
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->setClassVariablesToNull();
+    }
+
+    protected function setClassVariablesToNull()
+    {
+        $this->workPlace = null;
+        $this->worker = null;
+        $this->user = null;
+    }
+
     /** @test */
     public function a_shift_can_be_added_to_schedule()
     {
-        $firstUser = signIn();
-        $permissions = setUpPermissionForUser();
-        $shift = getShiftAndCreateWorker($permissions);
-        $firstUser->tokens()->each(fn ($token) => $token->delete());
+        $shift = factory(Shift::class)->raw([
+            'work_place_id' => $this->workPlace->id,
+            'worker_id' => $this->worker->id
+        ]);
 
-        signIn($permissions['user']);
-        $response = $this->json('post', 'api/shift', $shift['shift']);
+        $response = $this->json('post', 'api/shift', $shift);
 
         $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertCount(1, Shift::all());
@@ -31,11 +71,13 @@ class ShiftControllerTest extends TestCase
     public function a_shift_can_be_updated()
     {
         $this->withoutExceptionHandling();
-        $permissions = setUpPermissionForUser();
-        $shiftAndWorker = createShiftAndWorker($permissions);
 
-        signIn($permissions['user']);
-        $response = $this->json('put', 'api/shift/' . $shiftAndWorker['shift']->id, [
+        $shift = factory(Shift::class)->create([
+            'work_place_id' => $this->workPlace->id,
+            'worker_id' => $this->worker->id
+        ]);
+
+        $response = $this->json('put', 'api/shift/' . $shift->id, [
             'shift_start' => '12:00',
             'shift_end' => '22:00',
         ]);
@@ -50,15 +92,14 @@ class ShiftControllerTest extends TestCase
     {
         $this->withoutExceptionHandling();
 
-        $permission = setUpPermissionForUser();
-        createShiftAndWorker($permission);
+        $shift = factory(Shift::class)->create([
+            'work_place_id' => $this->workPlace->id,
+            'worker_id' => $this->worker->id
+        ]);
 
-        signIn($permission['user']);
-
-        $this->assertCount(1, Shift::all());
-
-        $this->delete('api/shift/1');
-
+        $response = $this->delete('api/shift/1');
+        
+        $response->assertStatus(ResponseStatus::HTTP_OK);
         $this->assertCount(0, Shift::all());
     }
 

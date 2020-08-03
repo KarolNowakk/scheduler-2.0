@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Availability;
+use App\Indisposition;
 use Illuminate\Support\Facades\Auth;
 use app\Interfaces\ToUserRelationsInterface;
 

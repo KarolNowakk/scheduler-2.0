@@ -1,5 +1,6 @@
 <?php
 
+use App\Indisposition;
 use App\User;
 use App\WorkPlace;
 use App\Permission;
