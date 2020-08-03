@@ -3,6 +3,7 @@
 namespace Tests\Helpers;
 
 use App\Indisposition;
+use App\MonthlyRequirments;
 use App\User;
 use App\WorkPlace;
 use App\Permission;
@@ -34,7 +35,7 @@ class SetUper
         ]);
     }
 
-    protected function createAvailabilitiesFor($howMany, $worker = null, $start = '07:30', $end = '21:30') : void
+    protected function createInispositionsFor($howMany, $worker = null, $start = '07:30', $end = '21:30') : void
     {
         $worker = is_null($worker) ? $this->getWorker() : $worker;
         
@@ -48,6 +49,14 @@ class SetUper
         }
     }
 
+    protected function createMonthlyRequirements()
+    {
+        factory(MonthlyRequirments::class)->create([
+            'month' => $this->month,
+            'work_place_id' => $this->workPlace->id
+        ]);
+    }
+
     public function setUp()
     {
         $workers = collect();
@@ -56,7 +65,9 @@ class SetUper
         }
 
         $workers->each(function ($worker) {
-            $this->createAvailabilitiesFor(random_int(4, 15), $worker);
+            $this->createInispositionsFor(random_int(2, 6), $worker);
         });
+
+        $this->createMonthlyRequirements();
     }
 }

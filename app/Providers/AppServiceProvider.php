@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Indisposition;
+use App\MonthlyRequirments;
 use App\Observers\ModelEventObserver;
 use App\Permission;
 use App\Shift;
@@ -34,5 +35,6 @@ class AppServiceProvider extends ServiceProvider
         Permission::observe(ModelEventObserver::class);
         Indisposition::observe(ModelEventObserver::class);
         Shift::observe(ModelEventObserver::class);
+        MonthlyRequirments::observe(ModelEventObserver::class);
     }
 }
