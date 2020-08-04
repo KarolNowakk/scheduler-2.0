@@ -23,28 +23,15 @@ class CreateMonthlyRequirmentsTable extends Migration
 
             $table->unsignedBigInteger('work_place_id');
             $table->timestamp('month');
+            $table->unsignedTinyInteger('min_working_hours');
 
-            $table->time('monday_start');
-            $table->time('monday_end');
-            $table->integer('monday_workers_on_shift');
-            $table->time('tuesday_start');
-            $table->time('tuesday_end');
-            $table->integer('tuesday_workers_on_shift');
-            $table->time('wednesday_start');
-            $table->time('wednesday_end');
-            $table->integer('wednesday_workers_on_shift');
-            $table->time('thursday_start');
-            $table->time('thursday_end');
-            $table->integer('thursday_workers_on_shift');
-            $table->time('friday_start');
-            $table->time('friday_end');
-            $table->integer('friday_workers_on_shift');
-            $table->time('saturday_start');
-            $table->time('saturday_end');
-            $table->integer('saturday_workers_on_shift');
-            $table->time('sunday_start');
-            $table->time('sunday_end');
-            $table->integer('sunday_workers_on_shift');
+            $table->string('monday');
+            $table->string('tuesday');
+            $table->string('wednesday');
+            $table->string('thursday');
+            $table->string('friday');
+            $table->string('saturday');
+            $table->string('sunday');
            
             $table->foreign('work_place_id')
                 ->references('id')

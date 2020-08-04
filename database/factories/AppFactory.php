@@ -3,6 +3,7 @@
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
 use App\Indisposition;
+use App\MonthlyRequirments;
 use App\Shift;
 use App\User;
 use App\Worker;
@@ -60,11 +61,31 @@ $factory->define(Permission::class, function (Faker $faker) {
 });
 
 $factory->define(Indisposition::class, function (Faker $faker) {
+    $start = '07:30';
+    $end = '21:30';
     return [
-        'month' => $faker->date('Y-m'),
-        'day' => $faker->date('d'),
-        'start' => $faker->time('H:i'),
-        'end' => $faker->time('H:i'),
+        'day' => $faker->date('Y-m-d'),
+        'start' => $start,
+        'end' => $end,
         'worker_id' => null,
+    ];
+});
+
+$factory->define(MonthlyRequirments::class, function (Faker $faker) {
+    $start = '07:30';
+    $end = '21:30';
+
+    return [
+        'work_place_id' => null,
+        'month' => $faker->date('Y-m'),
+        'min_working_hours' => 6,
+
+        'monday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'tuesday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'wednesday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'thursday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'friday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'saturday' => $start . ',' .  $end . ',' . random_int(2, 6),
+        'sunday' => $start . ',' .  $end . ',' . random_int(2, 6)
     ];
 });

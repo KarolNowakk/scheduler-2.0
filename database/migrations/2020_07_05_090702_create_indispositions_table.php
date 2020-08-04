@@ -16,7 +16,6 @@ class CreateIndispositionsTable extends Migration
         Schema::create('indispositions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('worker_id');
-            $table->timestamp('month');
             $table->timestamp('day');
             $table->time('start');
             $table->time('end');

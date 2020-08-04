@@ -7,7 +7,6 @@ use App\Worker;
 use App\WorkPlace;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Symfony\Component\HttpFoundation\Response as ResponseStatus;

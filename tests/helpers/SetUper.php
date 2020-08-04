@@ -42,7 +42,7 @@ class SetUper
         for ($i = 0; $i < $howMany; $i++) {
             factory(Indisposition::class)->create([
                 'worker_id' => $worker->id,
-                'month' => $this->month,
+                'day' => $this->month . '-' . random_int(1, 29),
                 'start' => $start,
                 'end' => $end
             ]);

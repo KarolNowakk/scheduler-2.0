@@ -29,7 +29,7 @@ class Worker extends Model implements ToUserRelationsInterface
         return $this->hasMany(Shift::class, 'worker_id');
     }
 
-    public function Indisposition()
+    public function indisposition()
     {
         return $this->hasMany(Indisposition::class, 'worker_id');
     }

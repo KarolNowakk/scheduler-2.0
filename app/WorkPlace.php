@@ -23,4 +23,9 @@ class WorkPlace extends Model implements ToUserRelationsInterface
     {
         return $this->hasMany(Permission::class, 'work_place_id');
     }
+
+    public function monthlyRequirements()
+    {
+        return $this->hasMany(MonthlyRequirments::class, 'work_place_id');
+    }
 }
