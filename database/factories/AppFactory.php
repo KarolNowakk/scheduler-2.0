@@ -74,18 +74,62 @@ $factory->define(Indisposition::class, function (Faker $faker) {
 $factory->define(MonthlyRequirments::class, function (Faker $faker) {
     $start = '07:30';
     $end = '21:30';
+    $mmin_workers_on_shift = '21:30';
 
     return [
         'work_place_id' => null,
         'month' => $faker->date('Y-m'),
         'min_working_hours' => 6,
+        'max_days_in_row' => 4,
 
-        'monday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'tuesday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'wednesday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'thursday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'friday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'saturday' => $start . ',' .  $end . ',' . random_int(2, 6),
-        'sunday' => $start . ',' .  $end . ',' . random_int(2, 6)
+        'monday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'tuesday' =>json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'wednesday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'thursday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'friday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'saturday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ]),
+        'sunday' => json_encode([
+            [
+                'start' => $start,
+                'end' => $end,
+                'min_workers_on_shift' => $mmin_workers_on_shift
+            ]
+        ])
     ];
 });

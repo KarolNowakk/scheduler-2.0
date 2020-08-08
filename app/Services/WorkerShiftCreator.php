@@ -1,37 +1,32 @@
-<?php 
+<?php
 
 namespace App\Services;
 
 use App\Worker;
 use Illuminate\Support\Carbon;
 
-class WorkerShiftCreator {
+class WorkerShiftCreator
+{
+    protected $worker;
+    protected $workPlace;
+    protected $day;
+    protected $shift;
 
-    protected $worker = null;
-    protected $day = null;
-
-    public function __construct(Worker $worker,string $day)
+    public function __construct(Worker $worker, string $day, object $shift)
     {
         $this->worker = $worker;
+        $this->workPlace = $worker->workPlace;
         $this->day = $day;
+        $this->shift = $shift;
     }
 
-    public function insert()
+    public function create()
     {
         $this->worker->shifts()->create([
             'day' => $this->day,
-            'shift_start' => $this->getShiftStart(),
-            'shift_end' => $this->getShiftEnd(),
+            'work_place_id' => $this->workPlace->id,
+            'shift_start' => $this->shift->start,
+            'shift_end' => $this->shift->end,
         ]);
-    }
-
-    protected function getShiftStart()
-    {
-        
-    }
-
-    protected function getShiftEnd()
-    {
-        
     }
 }

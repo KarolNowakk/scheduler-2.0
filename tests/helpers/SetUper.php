@@ -20,6 +20,8 @@ class SetUper
     protected $creator;
     protected $workPlace;
     protected $month;
+    protected $workers;
+    protected $requirements;
 
     public function __construct()
     {
@@ -28,7 +30,7 @@ class SetUper
         $this->month = '2020-12';
     }
 
-    protected function getWorker() : Worker
+    protected function createWorker() : Worker
     {
         return factory(Worker::class)->create([
             'work_place_id' => $this->workPlace->id
@@ -37,7 +39,7 @@ class SetUper
 
     protected function createInispositionsFor($howMany, $worker = null, $start = '07:30', $end = '21:30') : void
     {
-        $worker = is_null($worker) ? $this->getWorker() : $worker;
+        $worker = is_null($worker) ? $this->createWorker() : $worker;
         
         for ($i = 0; $i < $howMany; $i++) {
             factory(Indisposition::class)->create([
@@ -49,25 +51,55 @@ class SetUper
         }
     }
 
-    protected function createMonthlyRequirements()
+    protected function createMonthlyRequirements() : void
     {
-        factory(MonthlyRequirments::class)->create([
+        $this->requirements = factory(MonthlyRequirments::class)->create([
             'month' => $this->month,
             'work_place_id' => $this->workPlace->id
         ]);
     }
 
-    public function setUp()
+    public function setUp() : void
     {
-        $workers = collect();
+        $this->workers = collect();
         for ($i = 0; $i < 11; $i++) {
-            $workers->push($this->getWorker());
+            $this->workers->push($this->createWorker());
         }
 
-        $workers->each(function ($worker) {
+        $this->workers->each(function ($worker) {
             $this->createInispositionsFor(random_int(2, 6), $worker);
         });
 
         $this->createMonthlyRequirements();
+    }
+
+    public function getCreator() : User
+    {
+        return $this->creator;
+    }
+
+    public function getWorkPlace() : WorkPlace
+    {
+        return $this->workPlace;
+    }
+
+    public function getMonth() : string
+    {
+        return $this->month;
+    }
+
+    public function getWorker() : Worker
+    {
+        return $this->workers->random();
+    }
+
+    public function getWorkers() : \Illuminate\Support\Collection
+    {
+        return $this->workers;
+    }
+
+    public function getRequirements() : MonthlyRequirments
+    {
+        return $this->requirements;
     }
 }

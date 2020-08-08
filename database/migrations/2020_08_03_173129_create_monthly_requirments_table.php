@@ -24,6 +24,7 @@ class CreateMonthlyRequirmentsTable extends Migration
             $table->unsignedBigInteger('work_place_id');
             $table->timestamp('month');
             $table->unsignedTinyInteger('min_working_hours');
+            $table->unsignedTinyInteger('max_days_in_row');
 
             $table->string('monday');
             $table->string('tuesday');

@@ -4,29 +4,58 @@ namespace App\Services;
 
 use App\Worker;
 use Illuminate\Support\Carbon;
+use DateTime;
 
 class Check
 {
-    public static function workerIsAvailable(Worker $worker, string $day) : bool
+    public static function allWorkerHasAllreadyBeenChecked(int $workersCount, array $workersIds) : bool
     {
-        if ($worker->indisposition()->where('day', $day)->first() != null) {
-            $indisposition = $worker->indisposition()->where('day', $day)->first();
-            $requirements = $worker->workPlace->monthlyRequirements()
-                ->where('month', substr($day, 0, 7))
-                ->first()->toArray();
+        return $workersCount === count($workersIds);
+    }
 
-            $dayOfTheWeek = config('storage.weekDays')[date('w', strtotime($day))];
-            $start = explode(',', $requirements[$dayOfTheWeek])[0];
-            $end = explode(',', $requirements[$dayOfTheWeek])[1];
-            $startDiffrence = (strtotime($indisposition->start) - strtotime($start)) /60/60;
-            $endDiffrence = (strtotime($end) - strtotime($indisposition->end)) /60/60;
+    public static function workerIsAllreadyChecked(Worker $worker, array $workersIds) : bool
+    {
+        return in_array($worker->id, $workersIds);
+    }
 
-            if (($startDiffrence < $requirements['min_working_hours']) and ($endDiffrence < $requirements['min_working_hours'])) {
-                return false;
-            }
+    public static function workerIsNotAvailable(Worker $worker, string $day, object $shift) : bool
+    {
+        if ($worker->indisposition()->where('day', $day)->first() === null) {
+            return false;
+        }
+        $indisposition = $worker->indisposition()->where('day', $day)->first();
+        $requirements = $worker->workPlace->monthlyRequirements()
+            ->where('month', substr($day, 0, 7))
+            ->first()->toArray();
+
+        $startDiffrence = (strtotime($indisposition->start) - strtotime($shift->start)) /60/60;
+        $endDiffrence = (strtotime($shift->end) - strtotime($indisposition->end)) /60/60;
+
+        if (($startDiffrence < $requirements['min_working_hours']) and ($endDiffrence < $requirements['min_working_hours'])) {
             return true;
         }
+        return false;
+    }
 
-        return true;
+    public static function workerAllreadyWorksThisDay(Worker $worker, array $workersIds) : bool
+    {
+        return in_array($worker->id, $workersIds);
+    }
+
+    public static function workerWorksToManyDaysInRow(Worker $worker, string $month) : bool
+    {
+        $workingDays = $worker->shifts()->where('day', '>=', date('Y-m' . '-01'))->get()->pluck('day');
+        $daysInARow = 1;
+        for ($i = 0; $i < $workingDays->count();$i++) {
+            if ($i >= $workingDays->count() - 1) {
+                break;
+            }
+            $firstInRow = new DateTime($workingDays[$i]);
+            $nextWorkigDay = new DateTime($workingDays[$i + 1]);
+            $tommorow = $firstInRow->modify('+1 day');
+            $daysInARow = $tommorow == $nextWorkigDay ? $daysInARow + 1 : 1;
+        }
+
+        return $daysInARow > $worker->workPlace->monthlyRequirements()->where('month', $month)->first()->max_days_in_row;
     }
 }
