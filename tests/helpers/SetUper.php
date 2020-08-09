@@ -59,6 +59,16 @@ class SetUper
         ]);
     }
 
+    protected function createMonthlyDataForWorker() : void
+    {
+        $this->workers->each(function ($worker) {
+            $worker->monthlyData()->create([
+                'hours_to_be_worked' => random_int(40, 200),
+                'month' => $this->month
+            ]);
+        });
+    }
+
     public function setUp() : void
     {
         $this->workers = collect();
@@ -71,8 +81,10 @@ class SetUper
         });
 
         $this->createMonthlyRequirements();
+        $this->createMonthlyDataForWorker();
     }
 
+    // --------------------------------------------------------
     public function getCreator() : User
     {
         return $this->creator;

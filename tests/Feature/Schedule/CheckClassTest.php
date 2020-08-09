@@ -109,4 +109,32 @@ class CheckClassTest extends TestCase
 
         $this->assertFalse(Check::workerWorksToManyDaysInRow($worker, $this->setUper->getMonth()));
     }
+
+    /** @test */
+    public function worker_allready_reached_hours_to_be_worked_limit_returns_true_if_hours_worked_is_less_then_hours_to_be_worked_plus_10()
+    {
+        $worker = $this->setUper->getWorker();
+        $worker->monthlyData()->delete();
+        $worker->monthlyData()->create([
+            'month' => $this->setUper->getMonth(),
+            'hours_worked' => 140,
+            'hours_to_be_worked' => 200
+        ]);
+
+        $this->assertFalse(Check::workerAllreadyReachedHoursToBeWorkedLimit($worker, $this->setUper->getMonth()));
+    }
+
+    /** @test */
+    public function worker_allready_reached_hours_to_be_worked_limit_returns_false_if_hours_worked_is_bigger_then_hours_to_be_worked_plus_10()
+    {
+        $worker = $this->setUper->getWorker();
+        $worker->monthlyData()->delete();
+        $worker->monthlyData()->create([
+            'month' => $this->setUper->getMonth(),
+            'hours_worked' => 200,
+            'hours_to_be_worked' => 140
+        ]);
+
+        $this->assertTrue(Check::workerAllreadyReachedHoursToBeWorkedLimit($worker, $this->setUper->getMonth()));
+    }
 }

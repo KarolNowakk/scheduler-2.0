@@ -22,11 +22,12 @@ class WorkerShiftCreator
 
     public function create()
     {
-        $this->worker->shifts()->create([
+        return $this->worker->shifts()->create([
             'day' => $this->day,
             'work_place_id' => $this->workPlace->id,
             'shift_start' => $this->shift->start,
             'shift_end' => $this->shift->end,
+            'auto_created' => true,
         ]);
     }
 }

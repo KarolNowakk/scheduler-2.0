@@ -1,22 +1,32 @@
-<?php 
+<?php
 
 namespace App\Services;
 
+use App\WorkPlace;
+use Carbon\CarbonInterval;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
 
-class ScheduleGenerator {
+class ScheduleGenerator
+{
+    protected $workPlace;
+    protected $month;
 
-    protected $month = null;
-    protected $daysInMonth = null;
-
-    public function __construct(string $month)
-    {   
-        $this->month = Carbon::create($month);
-        $this->daysInMonth = $this->month->daysInMonth;
+    public function __construct(WorkPlace $workPlace, string $month)
+    {
+        $this->workPlace = $workPlace;
+        $this->month = $month;
     }
 
-    public function generateDay()
+    public function generate()
     {
+        $month = Carbon::create($this->month);
+        $period = CarbonPeriod::create($month->startOfMonth()->toDateString(), $month->endOfMonth()->toDateString());
+        $period->setDateInterval(CarbonInterval::make(1, 'days'));
         
+        foreach ($period as $value) {
+            $dayScheduler = new ScheduleDay($this->workPlace, $value->toDateString(), $this->month);
+            $dayScheduler->schedule();
+        }
     }
 }

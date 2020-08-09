@@ -21,6 +21,7 @@ class CreateMonthlyWorkerDataTable extends Migration
             $table->unsignedSmallInteger('hourly_rate')->nullable();
             $table->unsignedSmallInteger('bonus')->nullable();
             $table->timestamp('month');
+            $table->timestamps();
         });
     }
 

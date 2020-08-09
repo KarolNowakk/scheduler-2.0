@@ -4,29 +4,42 @@ namespace App\Services;
 
 use App\Worker;
 use App\WorkPlace;
+use App\Shift;
 use Illuminate\Support\Carbon;
 
 class ScheduleDay
 {
+    protected $workPlace;
+    protected $day;
+    protected $month;
+    protected $requirements;
+
+    protected $workersCount;
     protected $allreadyWorkingWorkersIds = [];
     protected $allreadyCheckedWorkersIds = [];
-    protected $workersCount = null;
-    protected $day = null;
-    protected $workPlace;
 
     public function __construct(WorkPlace $workPlace, string $day, string $month)
     {
         $this->workPlace = $workPlace;
-        $this->workersCount = $workPlace->workers->count();
         $this->day = $day;
         $this->month = $month;
+        $this->requirements = $this->workPlace->monthlyRequirements()
+            ->where('month', $this->month)
+            ->first()
+            ->toArray();
+        $this->workersCount = $workPlace->workers->count();
     }
 
     public function schedule()
     {
-        $this->shifts->each(function ($shift) {
-            $this->createShift($shift);
-        });
+        $dayName = config('storage.weekDays')[date('w', strtotime($this->day))];
+        $shifts = json_decode($this->requirements[$dayName]);
+
+        foreach ($shifts as $shift) {
+            for ($i=0; $i < $shift->min_workers_on_shift; $i++) {
+                $this->createShift($shift);
+            }
+        }
     }
 
     public function createShift(object $shift)
@@ -34,9 +47,12 @@ class ScheduleDay
         while (true) {
             $worker = $this->workPlace->workers->random();
 
-            if (Check::workerIsAllreadyChecked($this->workersCount, $this->allreadyCheckedWorkersIds)) {
+            if (Check::allWorkersHasAllreadyBeenChecked($this->workersCount, $this->allreadyCheckedWorkersIds)) {
                 // TODO: create message model
                 break;
+            }
+            if (Check::workerIsAllreadyChecked($worker, $this->allreadyCheckedWorkersIds)) {
+                continue;
             }
             if (Check::workerIsNotAvailable($worker, $this->day, $shift)) {
                 $this->markChecked($worker->id);
@@ -50,11 +66,15 @@ class ScheduleDay
                 $this->markChecked($worker->id);
                 continue;
             }
+            if (Check::workerAllreadyReachedHoursToBeWorkedLimit($worker, $this->month)) {
+                $this->markChecked($worker->id);
+                continue;
+            }
 
             $shiftCreator = new WorkerShiftCreator($worker, $this->day, $shift);
-            $shiftCreator->create();
+            $shift = $shiftCreator->create();
             
-            array_push($this->allreadyWorkingWorkersIds, $worker->id);
+            $this->handelShiftCreated($worker, $shift);
             break;
         }
     }
@@ -64,5 +84,15 @@ class ScheduleDay
         if (! in_array($workerId, $this->allreadyCheckedWorkersIds)) {
             array_push($this->allreadyCheckedWorkersIds, $workerId);
         }
+    }
+
+    public function handelShiftCreated(Worker $worker, Shift $shift)
+    {
+        array_push($this->allreadyWorkingWorkersIds, $worker->id);
+
+        $workerMonthlyData = $worker->monthlyData()->where('month', $this->month)->first();
+        $hoursOnShift = (strtotime($shift->shift_end) - strtotime($shift->shift_start)) / 60 / 60 ;
+        $workerMonthlyData->hours_worked +=  $hoursOnShift;
+        $workerMonthlyData->save();
     }
 }

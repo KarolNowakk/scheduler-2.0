@@ -8,7 +8,13 @@ use DateTime;
 
 class Check
 {
-    public static function allWorkerHasAllreadyBeenChecked(int $workersCount, array $workersIds) : bool
+    public static function workerAllreadyReachedHoursToBeWorkedLimit(Worker $worker, string $month) : bool
+    {
+        $data = $worker->monthlyData()->where('month', $month)->first();
+        return $data->hours_worked > $data->hours_to_be_worked + 10;
+    }
+    
+    public static function allWorkersHasAllreadyBeenChecked(int $workersCount, array $workersIds) : bool
     {
         return $workersCount === count($workersIds);
     }

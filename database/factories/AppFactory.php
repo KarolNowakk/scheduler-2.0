@@ -74,7 +74,7 @@ $factory->define(Indisposition::class, function (Faker $faker) {
 $factory->define(MonthlyRequirments::class, function (Faker $faker) {
     $start = '07:30';
     $end = '21:30';
-    $mmin_workers_on_shift = '21:30';
+    $mmin_workers_on_shift = 4;
 
     return [
         'work_place_id' => null,
