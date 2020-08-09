@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\SchedulerMessage;
 use App\Worker;
 use App\WorkPlace;
 use App\Shift;
@@ -42,13 +43,13 @@ class ScheduleDay
         }
     }
 
-    public function createShift(object $shift)
+    protected function createShift(object $shift)
     {
         while (true) {
             $worker = $this->workPlace->workers->random();
 
             if (Check::allWorkersHasAllreadyBeenChecked($this->workersCount, $this->allreadyCheckedWorkersIds)) {
-                // TODO: create message model
+                $this->message('No worker can work at' . $this->day . '.');
                 break;
             }
             if (Check::workerIsAllreadyChecked($worker, $this->allreadyCheckedWorkersIds)) {
@@ -79,14 +80,14 @@ class ScheduleDay
         }
     }
 
-    public function markChecked(int $workerId)
+    protected function markChecked(int $workerId)
     {
         if (! in_array($workerId, $this->allreadyCheckedWorkersIds)) {
             array_push($this->allreadyCheckedWorkersIds, $workerId);
         }
     }
 
-    public function handelShiftCreated(Worker $worker, Shift $shift)
+    protected function handelShiftCreated(Worker $worker, Shift $shift)
     {
         array_push($this->allreadyWorkingWorkersIds, $worker->id);
 
@@ -94,5 +95,14 @@ class ScheduleDay
         $hoursOnShift = (strtotime($shift->shift_end) - strtotime($shift->shift_start)) / 60 / 60 ;
         $workerMonthlyData->hours_worked +=  $hoursOnShift;
         $workerMonthlyData->save();
+    }
+
+    protected function message(string $message)
+    {
+        SchedulerMessage::create([
+            'work_place_id' => $this->workPlace->id,
+            'month' => $this->month,
+            'message' => $message
+        ]);
     }
 }
