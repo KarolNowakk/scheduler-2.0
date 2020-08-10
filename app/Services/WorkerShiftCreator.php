@@ -20,7 +20,7 @@ class WorkerShiftCreator
         $this->shift = $shift;
     }
 
-    public function create()
+    public function create() : \App\Shift
     {
         return $this->worker->shifts()->create([
             'day' => $this->day,

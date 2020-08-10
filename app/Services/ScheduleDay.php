@@ -31,26 +31,28 @@ class ScheduleDay
         $this->workersCount = $workPlace->workers->count();
     }
 
-    public function schedule()
+    public function schedule() : void
     {
         $dayName = config('storage.weekDays')[date('w', strtotime($this->day))];
         $shifts = json_decode($this->requirements[$dayName]);
 
         foreach ($shifts as $shift) {
             for ($i=0; $i < $shift->min_workers_on_shift; $i++) {
-                $this->createShift($shift);
+                if (! $this->createShift($shift)) {
+                    break;
+                }
             }
         }
     }
 
-    protected function createShift(object $shift)
+    protected function createShift(object $shift) : bool
     {
         while (true) {
             $worker = $this->workPlace->workers->random();
 
             if (Check::allWorkersHasAllreadyBeenChecked($this->workersCount, $this->allreadyCheckedWorkersIds)) {
-                $this->message('No worker can work at' . $this->day . '.');
-                break;
+                $this->message('Not all shifts are filled at ' . $this->day . '.');
+                return false;
             }
             if (Check::workerIsAllreadyChecked($worker, $this->allreadyCheckedWorkersIds)) {
                 continue;
@@ -78,16 +80,18 @@ class ScheduleDay
             $this->handelShiftCreated($worker, $shift);
             break;
         }
+
+        return true;
     }
 
-    protected function markChecked(int $workerId)
+    protected function markChecked(int $workerId) : void
     {
         if (! in_array($workerId, $this->allreadyCheckedWorkersIds)) {
             array_push($this->allreadyCheckedWorkersIds, $workerId);
         }
     }
 
-    protected function handelShiftCreated(Worker $worker, Shift $shift)
+    protected function handelShiftCreated(Worker $worker, Shift $shift) : void
     {
         array_push($this->allreadyWorkingWorkersIds, $worker->id);
 
@@ -97,7 +101,7 @@ class ScheduleDay
         $workerMonthlyData->save();
     }
 
-    protected function message(string $message)
+    protected function message(string $message) : void
     {
         SchedulerMessage::create([
             'work_place_id' => $this->workPlace->id,

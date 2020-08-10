@@ -4,6 +4,7 @@ namespace Tests\Feature\Permissions;
 
 use App\Indisposition;
 use App\MonthlyRequirments;
+use App\SchedulerMessage;
 use App\Services\Check;
 use App\Services\ScheduleGenerator;
 use App\Shift;
@@ -38,6 +39,6 @@ class ScheduleGeneratorTest extends TestCase
 
         $schedule->generate();
 
-        dd(Shift::all()->count(), $this->setUper->getWorker()->shifts);
+        $this->assertTrue(Shift::all()->count() > 31);
     }
 }

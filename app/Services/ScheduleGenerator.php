@@ -18,7 +18,7 @@ class ScheduleGenerator
         $this->month = $month;
     }
 
-    public function generate()
+    public function generate() : void
     {
         $month = Carbon::create($this->month);
         $period = CarbonPeriod::create($month->startOfMonth()->toDateString(), $month->endOfMonth()->toDateString());
