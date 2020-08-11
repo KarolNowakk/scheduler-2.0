@@ -1,7 +1,11 @@
 <?php
 
-use App\Permission;
 use Illuminate\Support\Facades\Route;
+
+Route::group([ 'middleware' => 'cors'], function() {
+  Route::post('/login', 'AuthController@login');
+  Route::post('/register', 'AuthController@register');
+});
 
 Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/work_place', 'WorkPlaceController@store');
@@ -28,4 +32,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/indisposition/{worker}', 'IndispositionController@store');
     Route::put('/indisposition/{Indisposition}', 'IndispositionController@update');
     Route::delete('/indisposition/{Indisposition}', 'IndispositionController@destroy');
+
+    Route::group([ ‘middleware’ => ‘cors’], function() {
+        Route::get('/logout', 'AuthController@logout');
+    });
 });
